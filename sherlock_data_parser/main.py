@@ -1,9 +1,11 @@
 from jpype import *
-from FAA_parser import *
-from CIWS_parser import *
+from FAA_parser import FAA_Parser
+from CIWS_parser import load_ET
 import matplotlib.pyplot as plt
 import numpy as np
+from utils import *
 import warnings
+import os
 
 class FAA_ENGINE(object):
 
@@ -21,6 +23,15 @@ class FAA_ENGINE(object):
         save_csv(self.traj, self.call_sign, self.time)  # save real trajectory in a csv file
 
         save_trx(self.flight_plan_change_sequence, self.call_sign, self.time)  # save trx files
+
+
+    def weather_contour(self):
+        func = load_ET(self.time)
+        func.load_labels()
+        # fun.save_pics()
+        for i in range(len(self.flight_plan_sequence_change_time)):
+            func.plot_weather_contour(self.flight_plan_sequence_change_time[i], self.call_sign)
+        plt.hold(False)
 
     def run_NATS(self):
 
@@ -81,19 +92,16 @@ class FAA_ENGINE(object):
 
         plt.legend(self.datetime)
         plt.savefig('flight_plan_plot/flight_plan_' + self.call_sign + '_' + self.time)
-        plt.hold(False)
+        # plt.hold(False)
         # plt.show()
 
-    def weather_contour(self):
-        func = load_ET(self.time)
-        func.load_labels()
-        # fun.save_pics()
-        for i in range(len(self.flight_plan_sequence_change_time)):
-            func.plot_weather_contour(self.flight_plan_sequence_change_time[i], self.call_sign)
 
     def draw_traj(self):
-        plt.plot(self.traj[:, 1], self.traj[:, 2])
+        traj = np.genfromtxt('traj_csv/' + self.time + '_' + self.call_sign + '.csv', delimiter=",")  # load csv file
+        plt.plot(traj[:, 2], traj[:, 1], 'k--')
+        # plt.legend(["real trajectory"])
         plt.savefig('traj_plot/traj_' + self.call_sign + '_' + self.time)
+        plt.hold(False)
         # plt.show()
 
 
@@ -106,6 +114,6 @@ if __name__ == '__main__':
 
     fun = FAA_ENGINE(call_sign, date)
     fun.run_parser_and_save_files()
-    fun.run_NATS()
     fun.weather_contour()
+    fun.run_NATS()
     fun.draw_traj()
