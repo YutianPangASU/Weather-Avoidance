@@ -40,6 +40,7 @@ class FAA_Parser(object):
         flight_plan_change = flight_plan[:, 5]
 
         self.track_point = np.delete(self.track_point, [0, 2, 5], axis=1)  # col1:unix time, col2:lon, col3:lat
+        self.track_point[:, [1, 2]] = self.track_point[:, [2, 1]]  # swap last two colomns
 
         return flight_plan_change_time, flight_plan_change, self.track_point
 
@@ -56,4 +57,4 @@ if __name__ == '__main__':  # main function only for testing purpose
 
     fun = FAA_Parser(call_sign='AAL717', time='20170406')
     flight_plan__sequence_change_time, flight_plan_change_sequence, trajectory = fun.get_flight_plan()
-    fun.plot_real_trajectory()
+    # fun.plot_real_trajectory()

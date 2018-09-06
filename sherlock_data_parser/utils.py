@@ -1,6 +1,8 @@
 import datetime
 import numpy as np
 import pandas as pd
+from numpy.linalg import norm
+from scipy import spatial
 
 
 def unixtime_to_datetime(unix_time):  # input can be an array
@@ -63,3 +65,42 @@ def make_up_zeros(str):
         return "00" + str
     if len(str) == 1:
         return "00" + str
+
+
+def calculate_max_distance(a, b, c):
+    # this function is used to find the maximum deviation of the trajectory to the flight plan
+    # a and b are start and end way points
+    # c is a set of points in the trajectory
+
+    m = 0  # m is the maximum area between three points
+    idx = -1  # idx is the index of maximum points in c
+
+    for i in range(len(c)):
+        area = 0.5 * norm(np.cross(b - a, c[i, :] - a))
+        if area > m:
+            idx = idx + 1
+            m = area
+
+    length = norm(a - b)
+    h = np.divide(2*m, length)  # h is calibrated maximum distance
+
+    # return the maximum point in the trajectory and h
+    if idx == -1:
+        return None
+    else:
+        return c[idx, :], h
+
+
+def ranges(nums):
+    nums = sorted(set(nums))
+    gaps = [[s, e] for s, e in zip(nums, nums[1:]) if s+1 < e]
+    edges = iter(nums[:1] + sum(gaps, []) + nums[-1:])
+    return list(zip(edges, edges))
+
+
+if __name__ == '__main__':
+    a = np.asarray([1, 0])
+    b = np.asarray([5, 6])
+    c = np.asarray([[2, 1], [3, 2], [4, 3], [5, 4]])
+    point, distance = calculate_max_distance(a, b, c)
+    print point, distance
