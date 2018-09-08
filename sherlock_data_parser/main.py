@@ -2,9 +2,9 @@ from jpype import *
 from FAA_parser import FAA_Parser
 from CIWS_parser import load_ET
 import matplotlib.pyplot as plt
-import numpy as np
 from utils import *
 import os
+import csv
 
 
 class FAA_ENGINE(object):
@@ -14,6 +14,8 @@ class FAA_ENGINE(object):
         self.time = date
         self.call_sign = call_sign
         self.threshold = 0.2
+        self.lon = np.load('lon.npy')
+        self.lat = np.load('lat.npy')
 
     def run_parser_and_save_files(self):
 
@@ -110,7 +112,7 @@ class FAA_ENGINE(object):
 
     def fetch_data(self):
         waypoints = np.genfromtxt("flight_plan_coords/" + self.call_sign + '_' + str(0) + '.csv', delimiter=",")
-        # delete too close waypoints, usually happened during departure and landing process, not useful for cruise state
+        # delete too close waypoints, usually happened during departure and landing process, not useful for cruise
         wp_idx = np.unique(np.round(waypoints, 2), axis=0, return_index=True)[1]
         waypoints = waypoints[np.sort(wp_idx)]
 
@@ -123,36 +125,59 @@ class FAA_ENGINE(object):
         for i in range(0, len(waypoints)-1):
             closest_point_start_idx = spatial.KDTree(trajectory).query(waypoints[i, :])[1]
             closest_point_end_idx = spatial.KDTree(trajectory).query(waypoints[i+1, :])[1]
+            # print closest_point_start_idx, closest_point_end_idx
 
             if closest_point_start_idx >= closest_point_end_idx:
-                continue
+                traj_max_point, traj_max_distance = [0, 0], 0
             else:
                 traj_max_point, traj_max_distance = calculate_max_distance(waypoints[i, :], waypoints[i+1, :],
                                                         trajectory[closest_point_start_idx:closest_point_end_idx, :])
-                max_point = np.vstack([max_point, traj_max_point])
-                max_distance = np.append(max_distance, traj_max_distance)
+
+            max_point = np.vstack([max_point, traj_max_point])
+            max_distance = np.append(max_distance, traj_max_distance)
 
         # get the idx of points maximum distance greater than the given threshold value
         # then range it to get the start waypoint and the end waypoint to get the weather plot
+
         wp_range = ranges(np.squeeze(np.where(max_distance > self.threshold)))
 
         print "Found " + str(len(wp_range)) + " useful data points from the database of flight " + self.call_sign
 
         # save picture depending on the point information
         for i in range(len(wp_range)):
-            print "start point: " + str(waypoints[wp_range[i][0]])  # start point of the weather contour
-            print "end point: " + str(waypoints[wp_range[i][1]])  # end point of the  weather contour
+
+            start_pt = waypoints[wp_range[i][0]]
+            end_pt = waypoints[wp_range[i][1]]
+            print "start point: " + str(start_pt)  # start point of the weather contour
+            print "end point: " + str(end_pt)  # end point of the weather contour
+
+            lon_start_idx = find_nearest_index(self.lon, start_pt[0])
+            lon_end_idx = find_nearest_index(self.lon, end_pt[0])
+            lat_start_idx = find_nearest_index(self.lat, start_pt[1])
+            lat_end_idx = find_nearest_index(self.lat, end_pt[1])
+            lon_start_idx, lon_end_idx, lat_start_idx, lat_end_idx = sorted([lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx])
+
+            # save y_train
+            y_train = np.asarray(get_y_train(wp_range[i], max_point, start_pt, end_pt))
+            with open('y_train.csv', 'a') as csvfile:
+                csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                csvwriter.writerow(y_train)
+
+            # save x_train
+            # load_ET(self.time).crop_weather_contour(self.flight_plan_sequence_change_time[0], self.call_sign,
+            #                                         lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0])
+
 
 
 if __name__ == '__main__':
 
     date = '20170406'
-    call_sign = 'FDX1'
+    call_sign = 'AAL717'
 
     np.warnings.filterwarnings('ignore')  # ignore matplotlib warnings
 
     fun = FAA_ENGINE(call_sign, date)
-    #fun.run_parser_and_save_files()
+    fun.run_parser_and_save_files()
     #fun.weather_contour()
     #fun.run_NATS()
     #fun.draw_traj()

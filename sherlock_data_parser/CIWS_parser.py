@@ -113,6 +113,29 @@ class load_ET(object):
 
         # plt.show()
 
+    def crop_weather_contour(self, unix_time, call_sign, lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx):
+
+        pin = datetime.datetime.utcfromtimestamp(int(float(unix_time))).strftime('%Y%m%d %H%M%S')  # time handle to check CIWS database
+        array = np.asarray([0, 230, 500, 730,
+                            1000, 1230, 1500, 1730,
+                            2000, 2230, 2500, 2730,
+                            3000, 3230, 3500, 3730,
+                            4000, 4230, 4500, 4730,
+                            5000, 5230, 5500, 5730])
+
+        nearest_value = int(find_nearest_value(array, np.asarray([int(eliminate_zeros(pin[-4:]))])))  # find the closest time for downloading data from CIWS
+        nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
+
+        # find compared nc file
+        data = Dataset(str(self.date) + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
+        values = np.squeeze(data.variables['ECHO_TOP'])[lon_start_idx:lon_end_idx, lat_start_idx:lat_end_idx]
+
+        plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], values)
+
+        plt.savefig('EchoTopPic/' + str(call_sign) + ' ' + pin)
+
+
+
 
 if __name__ == '__main__':
 

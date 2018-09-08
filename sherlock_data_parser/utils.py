@@ -98,9 +98,56 @@ def ranges(nums):
     return list(zip(edges, edges))
 
 
+def get_y_train(range, array, start_pt, end_pt):
+
+    # the object for y train is 3 wps, use interpolation tools if needed
+    # format for y_train: x1, y1, x2, y2, x3, y3 (six columns in total)
+    # I only use linear interporation here
+
+    # one waypoint
+    if range[1] - range[0] == 0:
+        y_train = [0.5*(start_pt[0]+ array[range[0], 0]) ,  0.5*(start_pt[1]+ array[range[0], 1]) ,
+                   array[range[0], 0]                    ,  array[range[0], 1]                    ,
+                   0.5 * (end_pt[0] + array[range[0], 0]),  0.5 * (end_pt[1] + array[range[0], 1]),]
+        return y_train
+
+    # two waypoints
+    elif range[1] - range[0] == 1:
+        y_train = [array[range[0], 0]                           ,  array[range[0], 1]                           ,
+                   0.5*(array[range[0], 0] + array[range[1], 0]),  0.5*(array[range[0], 1] + array[range[1], 1]),
+                   array[range[1], 0]                           ,  array[range[1], 1]                           ,]
+        return y_train
+
+    # three waypoints
+    elif range[1] - range[0] == 2:
+        y_train = [array[range[0], 0]  ,  array[range[0], 1]   ,
+                   array[range[0]+1, 0],  array[range[0]+1, 1] ,
+                   array[range[1], 0]  ,  array[range[1], 1]   ,]
+        return y_train
+
+    # four waypoints
+    elif range[1] - range[0] == 3:
+        y_train = [0.5 * (array[range[0], 0] + array[range[0]+1, 0])      , 0.5 * (array[range[0], 1] + array[range[0]+1, 1])      ,
+                   0.5 * (array[range[1] - 1, 0] + array[range[1] + 1, 0]), 0.5 * (array[range[1] - 1, 1] + array[range[1] + 1, 1]),
+                   0.5 * (array[range[1], 0] + array[range[1] - 1, 0])    , 0.5 * (array[range[1], 1] + array[range[1] - 1, 1])    ,]
+        return y_train
+
+    # other cases(add if needed)
+    else:
+        return [0, 0, 0, 0, 0, 0]
+
+
 if __name__ == '__main__':
+
     a = np.asarray([1, 0])
     b = np.asarray([5, 6])
     c = np.asarray([[2, 1], [3, 2], [4, 3], [5, 4]])
     point, distance = calculate_max_distance(a, b, c)
     print point, distance
+
+    array = np.asarray([1,2,3,4,5,6,7,8,9,0])
+    num = np.asarray([3.4])
+    print find_nearest_index(array, num)
+
+    d = [0,1,2,3,6,8,9]
+    print ranges(d)
