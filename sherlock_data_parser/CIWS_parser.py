@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import pyproj
 from utils import *
+import cv2 as cv
 
 
 class load_ET(object):
@@ -113,7 +114,7 @@ class load_ET(object):
 
         # plt.show()
 
-    def crop_weather_contour(self, unix_time, call_sign, lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx):
+    def crop_weather_contour(self, num, unix_time, call_sign, lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx):
 
         pin = datetime.datetime.utcfromtimestamp(int(float(unix_time))).strftime('%Y%m%d %H%M%S')  # time handle to check CIWS database
         array = np.asarray([0, 230, 500, 730,
@@ -130,11 +131,21 @@ class load_ET(object):
         data = Dataset(str(self.date) + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
         values = np.squeeze(data.variables['ECHO_TOP'])[lon_start_idx:lon_end_idx, lat_start_idx:lat_end_idx]
 
-        plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], values)
+        # resize the matrix to 100 by 100 using opencv function
+        resized_values = cv.resize(values, (100, 100))
 
-        plt.savefig('EchoTopPic/' + str(call_sign) + ' ' + pin)
+        # load self.lon and self.lat
+        self.lon = np.load('lon.npy')
+        self.lat = np.load('lat.npy')
 
+        # resize long and lat to 100 for plots
+        lon_new = np.linspace(self.lon[lon_start_idx], self.lon[lon_end_idx], num=100)
+        lat_new = np.linspace(self.lat[lat_start_idx], self.lat[lat_end_idx], num=100)
 
+        # plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], resized_values)
+        plt.contourf(lon_new, lat_new, resized_values)
+
+        plt.savefig('EchoTopPic/' + str(call_sign) + ' ' + pin + ' ' + str(num))
 
 
 if __name__ == '__main__':

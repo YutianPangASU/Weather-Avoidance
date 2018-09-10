@@ -36,7 +36,7 @@ class FAA_ENGINE(object):
             func.plot_weather_contour(self.flight_plan_sequence_change_time[i], self.call_sign)
         plt.hold(False)
 
-    def run_NATS(self):
+    def run_NATS(self, draw_traj = False):
 
         os.environ['NATS_CLIENT_HOME']='/mnt/data/NATS/NATS_Client/'
         classpath = "/mnt/data/NATS/NATS_Client/dist/nats-client.jar:/mnt/data/NATS/NATS_Client/dist/nats-shared.jar"
@@ -79,8 +79,9 @@ class FAA_ENGINE(object):
         environmentInterface.load_rap("share/tg/rap")
 
         # load trx files
-        aircraftInterface.load_aircraft('/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" + self.call_sign + ".trx",
-                                        '/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" + self.call_sign + "_mfl.trx")
+        aircraftInterface.load_aircraft('/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" + self.call_sign +
+                                        ".trx", '/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" +
+                                        self.call_sign + "_mfl.trx")
         # default command
         aclist = aircraftInterface.getAllAircraftId()
 
@@ -92,21 +93,23 @@ class FAA_ENGINE(object):
             lat = ac.getFlight_plan_latitude_array()
             # save original flightplan waypoint coords as a csv file
             if i == 0:
-                np.savetxt("flight_plan_coords/" + self.call_sign + "_" + str(i) + ".csv", np.asarray([lon, lat]).T, delimiter=",")
+                np.savetxt("flight_plan_coords/" + self.call_sign + "_" + str(i) + ".csv",
+                           np.asarray([lon, lat]).T, delimiter=",")
 
             plt.plot(lon, lat)
             plt.hold(True)
 
         plt.legend(self.datetime)
         plt.savefig('flight_plan_plot/flight_plan_' + self.call_sign + '_' + self.time)
-        # plt.hold(False)
-        # plt.show()
 
-    def draw_traj(self):
-        traj = np.genfromtxt('traj_csv/' + self.time + '_' + self.call_sign + '.csv', delimiter=",")  # load csv file
-        plt.plot(traj[:, 1], traj[:, 2], 'k--')
-        # plt.legend(["real trajectory"])
-        plt.savefig('traj_plot/traj_' + self.call_sign + '_' + self.time)
+        # draw real trajectory along with flight plans
+        if draw_traj == True:
+            traj = np.genfromtxt('traj_csv/' + self.time + '_' + self.call_sign + '.csv',
+                                 delimiter=",")  # load csv file
+            plt.plot(traj[:, 1], traj[:, 2], 'k--')
+            # plt.legend(["real trajectory"])
+            plt.savefig('traj_plot/traj_' + self.call_sign + '_' + self.time)
+
         plt.hold(False)
         # plt.show()
 
@@ -143,19 +146,21 @@ class FAA_ENGINE(object):
 
         print "Found " + str(len(wp_range)) + " useful data points from the database of flight " + self.call_sign
 
-        # save picture depending on the point information
+        # save picture depending on the plot range information
         for i in range(len(wp_range)):
 
             start_pt = waypoints[wp_range[i][0]]
-            end_pt = waypoints[wp_range[i][1]]
-            print "start point: " + str(start_pt)  # start point of the weather contour
-            print "end point: " + str(end_pt)  # end point of the weather contour
+            end_pt = waypoints[wp_range[i][1] + 1]
+            print "start waypoint: " + str(start_pt)  # start point of the weather contour
+            print "return waypoint: " + str(end_pt)  # end point of the weather contour
 
             lon_start_idx = find_nearest_index(self.lon, start_pt[0])
             lon_end_idx = find_nearest_index(self.lon, end_pt[0])
             lat_start_idx = find_nearest_index(self.lat, start_pt[1])
             lat_end_idx = find_nearest_index(self.lat, end_pt[1])
-            lon_start_idx, lon_end_idx, lat_start_idx, lat_end_idx = sorted([lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx])
+
+            lon_start_idx, lon_end_idx = sorted([lon_start_idx, lon_end_idx])
+            lat_start_idx, lat_end_idx = sorted([lat_start_idx, lat_end_idx])
 
             # save y_train
             y_train = np.asarray(get_y_train(wp_range[i], max_point, start_pt, end_pt))
@@ -164,21 +169,19 @@ class FAA_ENGINE(object):
                 csvwriter.writerow(y_train)
 
             # save x_train
-            # load_ET(self.time).crop_weather_contour(self.flight_plan_sequence_change_time[0], self.call_sign,
-            #                                         lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0])
-
+            load_ET(self.time).crop_weather_contour(i, self.flight_plan_sequence_change_time[0], self.call_sign,
+                                                    lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0])
 
 
 if __name__ == '__main__':
 
     date = '20170406'
-    call_sign = 'AAL717'
+    call_sign = 'FDX1'
 
     np.warnings.filterwarnings('ignore')  # ignore matplotlib warnings
 
     fun = FAA_ENGINE(call_sign, date)
     fun.run_parser_and_save_files()
     #fun.weather_contour()
-    #fun.run_NATS()
-    #fun.draw_traj()
+    fun.run_NATS(draw_traj=True)
     fun.fetch_data()

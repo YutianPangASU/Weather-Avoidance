@@ -149,5 +149,5 @@ if __name__ == '__main__':
     num = np.asarray([3.4])
     print find_nearest_index(array, num)
 
-    d = [0,1,2,3,6,8,9]
+    d = [0, 1, 2, 3, 6, 8, 9]
     print ranges(d)

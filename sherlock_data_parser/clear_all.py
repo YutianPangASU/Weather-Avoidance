@@ -59,3 +59,9 @@ for the_file in os.listdir(folder):
         #elif os.path.isdir(file_path): shutil.rmtree(file_path)
     except Exception as e:
         print(e)
+
+# remove y_train.csv
+if os.path.exists("y_train.csv"):
+  os.remove("y_train.csv")
+else:
+  print("The file does not exist")
