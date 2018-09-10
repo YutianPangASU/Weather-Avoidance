@@ -182,6 +182,6 @@ if __name__ == '__main__':
 
     fun = FAA_ENGINE(call_sign, date)
     fun.run_parser_and_save_files()
-    #fun.weather_contour()
+    fun.weather_contour()
     fun.run_NATS(draw_traj=True)
     fun.fetch_data()

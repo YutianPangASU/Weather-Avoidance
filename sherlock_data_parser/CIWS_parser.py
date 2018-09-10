@@ -145,7 +145,7 @@ class load_ET(object):
         # plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], resized_values)
         plt.contourf(lon_new, lat_new, resized_values)
 
-        plt.savefig('EchoTopPic/' + str(call_sign) + ' ' + pin + ' ' + str(num))
+        plt.savefig('y_train/' + str(call_sign) + ' ' + pin + ' ' + str(num))
 
 
 if __name__ == '__main__':
