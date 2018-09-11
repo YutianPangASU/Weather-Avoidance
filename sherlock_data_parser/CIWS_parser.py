@@ -128,8 +128,8 @@ class load_ET(object):
         nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
 
         # find compared nc file
-        data = Dataset("data/" + str(self.date) + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
-        values = np.squeeze(data.variables['ECHO_TOP'])[lon_start_idx:lon_end_idx, lat_start_idx:lat_end_idx]
+        data = Dataset("data/" + pin[:8] + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
+        values = np.squeeze(data.variables['ECHO_TOP'])[lat_start_idx:lat_end_idx, lon_start_idx:lon_end_idx]
 
         # resize the matrix to 100 by 100 using opencv function
         resized_values = cv.resize(values, (100, 100))
@@ -144,9 +144,10 @@ class load_ET(object):
 
         # plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], resized_values)
         plt.contourf(lon_new, lat_new, resized_values)
+
         if hold is True:
             plt.hold(True)
-            plt.plot(y_train[0], y_train[1], 'r*', y_train[2], y_train[3], 'r*', y_train[4], y_train[5], 'r*')
+            plt.plot(y_train[0], y_train[1], 'r*', y_train[2], y_train[3], 'g*', y_train[4], y_train[5], 'b*')
         # plt.show()
 
         # save figure

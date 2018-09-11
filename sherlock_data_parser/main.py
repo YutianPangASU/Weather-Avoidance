@@ -29,6 +29,7 @@ class FAA_ENGINE(object):
         save_trx(self.flight_plan_change_sequence, self.call_sign, self.time)  # save trx files
 
     def weather_contour(self):
+
         func = load_ET(self.time)
         func.load_labels()
         # fun.save_pics()
@@ -114,7 +115,9 @@ class FAA_ENGINE(object):
         # plt.show()
 
     def fetch_data(self):
+
         waypoints = np.genfromtxt("flight_plan_coords/" + self.call_sign + '_' + str(0) + '.csv', delimiter=",")
+
         # delete too close waypoints, usually happened during departure and landing process, not useful for cruise
         wp_idx = np.unique(np.round(waypoints, 2), axis=0, return_index=True)[1]
         waypoints = waypoints[np.sort(wp_idx)]
@@ -128,7 +131,6 @@ class FAA_ENGINE(object):
         for i in range(0, len(waypoints)-1):
             closest_point_start_idx = spatial.KDTree(trajectory).query(waypoints[i, :])[1]
             closest_point_end_idx = spatial.KDTree(trajectory).query(waypoints[i+1, :])[1]
-            # print closest_point_start_idx, closest_point_end_idx
 
             if closest_point_start_idx >= closest_point_end_idx:
                 traj_max_point, traj_max_distance = [0, 0], 0
@@ -162,6 +164,11 @@ class FAA_ENGINE(object):
             lon_start_idx, lon_end_idx = sorted([lon_start_idx, lon_end_idx])
             lat_start_idx, lat_end_idx = sorted([lat_start_idx, lat_end_idx])
 
+            if lon_start_idx == lon_end_idx:
+                lon_end_idx = lon_end_idx + 1
+            if lat_start_idx == lat_end_idx:
+                lat_end_idx = lat_end_idx + 1
+
             # save y_train
             y_train = np.asarray(get_y_train(wp_range[i], max_point, start_pt, end_pt))
             with open('y_train.csv', 'a') as csvfile:
@@ -177,7 +184,7 @@ class FAA_ENGINE(object):
 if __name__ == '__main__':
 
     date = '20170406'
-    call_sign = 'AAL717'
+    call_sign = 'JBU131'
 
     np.warnings.filterwarnings('ignore')  # ignore matplotlib warnings
 
