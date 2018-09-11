@@ -106,7 +106,7 @@ class load_ET(object):
         nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
 
         # find compared nc file
-        data = Dataset("data/" + str(self.date) + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
+        data = Dataset("data/" + pin[:8] + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
         values = np.squeeze(data.variables['ECHO_TOP'])  # extract values
         plt.contourf(self.lon, self.lat, values)
 
