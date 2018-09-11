@@ -71,13 +71,13 @@ class load_ET(object):
 
     def save_pics(self):
 
-        handle = sorted(os.listdir(self.date + "EchoTop"))
+        handle = sorted(os.listdir("data/" + self.date + "EchoTop"))
 
         print ('There is ' + repr(len(handle)) + ' data files')
 
         for i in range(len(handle)):
         #for i in range(10):
-            data = Dataset(self.date + "EchoTop/" + handle[i])
+            data = Dataset("data/" + self.date + "EchoTop/" + handle[i])
             values = np.squeeze(data.variables['ECHO_TOP'])  # extract values
 
             # save EchoTop values and restore a 3d array
@@ -106,7 +106,7 @@ class load_ET(object):
         nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
 
         # find compared nc file
-        data = Dataset(str(self.date) + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
+        data = Dataset("data/" + str(self.date) + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
         values = np.squeeze(data.variables['ECHO_TOP'])  # extract values
         plt.contourf(self.lon, self.lat, values)
 
@@ -114,7 +114,7 @@ class load_ET(object):
 
         # plt.show()
 
-    def crop_weather_contour(self, num, unix_time, call_sign, lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx):
+    def crop_weather_contour(self, num, unix_time, call_sign, lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx, y_train, hold=False):
 
         pin = datetime.datetime.utcfromtimestamp(int(float(unix_time))).strftime('%Y%m%d %H%M%S')  # time handle to check CIWS database
         array = np.asarray([0, 230, 500, 730,
@@ -128,7 +128,7 @@ class load_ET(object):
         nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
 
         # find compared nc file
-        data = Dataset(str(self.date) + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
+        data = Dataset("data/" + str(self.date) + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
         values = np.squeeze(data.variables['ECHO_TOP'])[lon_start_idx:lon_end_idx, lat_start_idx:lat_end_idx]
 
         # resize the matrix to 100 by 100 using opencv function
@@ -144,8 +144,14 @@ class load_ET(object):
 
         # plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], resized_values)
         plt.contourf(lon_new, lat_new, resized_values)
+        if hold is True:
+            plt.hold(True)
+            plt.plot(y_train[0], y_train[1], 'r*', y_train[2], y_train[3], 'r*', y_train[4], y_train[5], 'r*')
+        # plt.show()
 
-        plt.savefig('y_train/' + str(call_sign) + ' ' + pin + ' ' + str(num))
+        # save figure
+        plt.savefig('x_train/' + str(call_sign) + ' ' + pin + ' ' + str(num))
+        plt.hold(False)
 
 
 if __name__ == '__main__':

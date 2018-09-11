@@ -7,7 +7,7 @@ class FAA_Parser(object):
 
     def __init__(self, call_sign, time):
 
-        self.df = pd.read_csv('IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=1500000, names=range(0, 18))
+        self.df = pd.read_csv('data/IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=1500000, names=range(0, 18))
 
         # specific row numbers to keep
         self.rows = []

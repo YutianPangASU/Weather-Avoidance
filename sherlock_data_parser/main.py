@@ -103,7 +103,7 @@ class FAA_ENGINE(object):
         plt.savefig('flight_plan_plot/flight_plan_' + self.call_sign + '_' + self.time)
 
         # draw real trajectory along with flight plans
-        if draw_traj == True:
+        if draw_traj is True:
             traj = np.genfromtxt('traj_csv/' + self.time + '_' + self.call_sign + '.csv',
                                  delimiter=",")  # load csv file
             plt.plot(traj[:, 1], traj[:, 2], 'k--')
@@ -170,18 +170,19 @@ class FAA_ENGINE(object):
 
             # save x_train
             load_ET(self.time).crop_weather_contour(i, self.flight_plan_sequence_change_time[0], self.call_sign,
-                                                    lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0])
+                                                    lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0],
+                                                    y_train, hold=True)
 
 
 if __name__ == '__main__':
 
     date = '20170406'
-    call_sign = 'FDX1'
+    call_sign = 'AAL717'
 
     np.warnings.filterwarnings('ignore')  # ignore matplotlib warnings
 
     fun = FAA_ENGINE(call_sign, date)
     fun.run_parser_and_save_files()
-    fun.weather_contour()
+    # fun.weather_contour()
     fun.run_NATS(draw_traj=True)
     fun.fetch_data()
