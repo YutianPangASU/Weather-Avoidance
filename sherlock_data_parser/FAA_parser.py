@@ -12,7 +12,7 @@ class FAA_Parser(object):
         # print "loaded " + str(n) + " rows of data"
         #print('Elapsed time : ', time.time() - t0)
 
-        self.df = pd.read_csv('data/IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=15000000, names=range(0, 18))
+        self.df = pd.read_csv('data/IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=1500000, names=range(0, 18))
 
         # specific row numbers to keep
         self.rows = []
@@ -20,7 +20,7 @@ class FAA_Parser(object):
 
         # specific colomn numbers to keep
         # cols = [0, 1, 7, 17]  # flightID, time, flight number, flight plan
-        self.cols = [0, 1, 7, 9, 10, 17]  # include lat and lon
+        self.cols = [0, 1, 7, 9, 10, 11, 17]  # include lat and lon
 
         self.track_point = []
 
@@ -44,7 +44,7 @@ class FAA_Parser(object):
         flight_plan_change_time = flight_plan[:, 1]
         flight_plan_change = flight_plan[:, 5]
 
-        self.track_point = np.delete(self.track_point, [0, 2, 5], axis=1)  # col1:unix time, col2:lon, col3:lat
+        self.track_point = np.delete(self.track_point, [0, 2, 6], axis=1)  # col1:unix time, col2:lon, col3:lat
         self.track_point[:, [1, 2]] = self.track_point[:, [2, 1]]  # swap last two colomns
 
         return flight_plan_change_time, flight_plan_change, self.track_point

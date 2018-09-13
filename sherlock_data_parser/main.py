@@ -124,7 +124,7 @@ class FAA_ENGINE(object):
 
         print "Found " + str(len(wp_idx)) + " waypoints from the flight plan of flight " + self.call_sign
 
-        trajectory = np.genfromtxt("traj_csv/" + self.time + "_" + self.call_sign + '.csv', delimiter=",")[:, -2:]
+        trajectory = np.genfromtxt("traj_csv/" + self.time + "_" + self.call_sign + '.csv', delimiter=",")[:, -3:-1]
 
         max_distance = []  # maximum distance
         max_point = np.empty((0, 2))  # maximum point
