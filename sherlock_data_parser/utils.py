@@ -93,6 +93,10 @@ def calculate_max_distance(a, b, c):
 
 
 def ranges(nums):
+
+    if len(nums.shape) == 0:
+        nums = np.expand_dims(nums, axis=0)
+
     nums = sorted(set(nums))
     gaps = [[s, e] for s, e in zip(nums, nums[1:]) if s+1 < e]
     edges = iter(nums[:1] + sum(gaps, []) + nums[-1:])
@@ -172,6 +176,40 @@ def get_y_train(range, array, start_pt, end_pt):
     #     print range
     #     return [0, 0, 0, 0, 0, 0]
 
+def extension(lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx):
+
+    delta_lat = lat_end_idx - lat_start_idx
+    delta_lon = lon_end_idx - lon_start_idx
+
+    if delta_lat <= 2:
+        delta_lat = 2
+    if delta_lon <= 2:
+        delta_lon = 2
+
+    lat_start_idx = lat_start_idx - delta_lat * 0.5
+    lat_end_idx = lat_end_idx + delta_lat * 0.5
+    lon_start_idx = lon_start_idx - delta_lat * 0.5
+    lon_end_idx = lon_end_idx + delta_lon * 0.5
+
+    # round to integer
+    # round up for end idx
+    lat_end_idx = int(lat_end_idx + .5)
+    lon_end_idx = int(lon_end_idx + .5)
+    lat_start_idx = int(lat_start_idx)
+    lon_start_idx = int(lon_start_idx)
+
+    # limit bounds
+    if lat_start_idx < 0:
+        lat_start_idx = 0
+    if lat_end_idx > 3519:
+        lat_end_idx = 3519
+    if lon_start_idx < 0:
+        lon_start_idx = 0
+    if lon_end_idx > 5119:
+        lon_end_idx = 5119
+
+    return lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx
+
 
 if __name__ == '__main__':
 
@@ -185,5 +223,6 @@ if __name__ == '__main__':
     num = np.asarray([3.4])
     print find_nearest_index(array, num)
 
-    d = [0, 1, 2, 3, 6, 8, 9]
+    #d = [0, 1, 2, 3, 6, 8, 9]
+    d = np.asarray(12)
     print ranges(d)

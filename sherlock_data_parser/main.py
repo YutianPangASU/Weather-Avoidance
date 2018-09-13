@@ -169,6 +169,10 @@ class FAA_ENGINE(object):
             if lat_start_idx == lat_end_idx:
                 lat_end_idx = lat_end_idx + 1
 
+            # extend latitude and longitude by 50% at each boundary
+            lat_start_idx_extended, lat_end_idx_extended, lon_start_idx_extended, lon_end_idx_extended = \
+                extension(lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx)
+
             # save y_train
             y_train = np.asarray(get_y_train(wp_range[i], max_point, start_pt, end_pt))
             with open('y_train.csv', 'a') as csvfile:
@@ -177,14 +181,15 @@ class FAA_ENGINE(object):
 
             # save x_train
             load_ET(self.time).crop_weather_contour(i, self.flight_plan_sequence_change_time[0], self.call_sign,
-                                                    lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0],
+                                                    lat_start_idx_extended, lat_end_idx_extended,
+                                                    lon_start_idx_extended, lon_end_idx_extended,
                                                     y_train, hold=True)
 
 
 if __name__ == '__main__':
 
     date = '20170406'
-    call_sign = 'ASA19'
+    call_sign = 'AAL1362'
 
     np.warnings.filterwarnings('ignore')  # ignore matplotlib warnings
 

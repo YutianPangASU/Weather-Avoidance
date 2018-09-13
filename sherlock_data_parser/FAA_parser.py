@@ -42,7 +42,7 @@ class FAA_Parser(object):
 
         flight_plan = flight_plan.values[fp_indices]
         flight_plan_change_time = flight_plan[:, 1]
-        flight_plan_change = flight_plan[:, 5]
+        flight_plan_change = flight_plan[:, -1]
 
         self.track_point = np.delete(self.track_point, [0, 2, 6], axis=1)  # col1:unix time, col2:lon, col3:lat
         self.track_point[:, [1, 2]] = self.track_point[:, [2, 1]]  # swap last two colomns
