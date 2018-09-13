@@ -60,7 +60,7 @@ for the_file in os.listdir(folder):
     except Exception as e:
         print(e)
 
-folder = '/mnt/data/WeatherCNN/sherlock/y_train'
+folder = '/mnt/data/WeatherCNN/sherlock/x_train'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:

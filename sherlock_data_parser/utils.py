@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from numpy.linalg import norm
 from scipy import spatial
+import cv2 as cv
 
 
 def unixtime_to_datetime(unix_time):  # input can be an array
@@ -100,10 +101,6 @@ def ranges(nums):
 
 def get_y_train(range, array, start_pt, end_pt):
 
-    # the object for y train is 3 wps, use interpolation tools if needed
-    # format for y_train: x1, y1, x2, y2, x3, y3 (six columns in total)
-    # I only use linear interporation here
-
     # one waypoint
     if range[1] - range[0] == 0:
         y_train = [0.5*(start_pt[0]+ array[range[0], 0]) ,  0.5*(start_pt[1]+ array[range[0], 1]) ,
@@ -125,16 +122,55 @@ def get_y_train(range, array, start_pt, end_pt):
                    array[range[1], 0]  ,  array[range[1], 1]   ,]
         return y_train
 
-    # four waypoints
-    elif range[1] - range[0] == 3:
-        y_train = [0.5 * (array[range[0], 0] + array[range[0]+1, 0])      , 0.5 * (array[range[0], 1] + array[range[0]+1, 1])      ,
-                   0.5 * (array[range[1] - 1, 0] + array[range[1] + 1, 0]), 0.5 * (array[range[1] - 1, 1] + array[range[1] + 1, 1]),
-                   0.5 * (array[range[1], 0] + array[range[1] - 1, 0])    , 0.5 * (array[range[1], 1] + array[range[1] - 1, 1])    ,]
+    # more than three cases, do interpolation
+    else:
+        y_train = list(np.resize(cv.resize(array[range[0]:range[1]], (2, 3)), (1, 6)))[0]
         return y_train
 
-    # other cases(add if needed)
-    else:
-        return [0, 0, 0, 0, 0, 0]
+
+    # # the object for y train is 3 wps, use interpolation tools if needed
+    # # format for y_train: x1, y1, x2, y2, x3, y3 (six columns in total)
+    # # I only use linear interporation here
+    #
+    # # one waypoint
+    # if range[1] - range[0] == 0:
+    #     y_train = [0.5*(start_pt[0]+ array[range[0], 0]) ,  0.5*(start_pt[1]+ array[range[0], 1]) ,
+    #                array[range[0], 0]                    ,  array[range[0], 1]                    ,
+    #                0.5 * (end_pt[0] + array[range[0], 0]),  0.5 * (end_pt[1] + array[range[0], 1]),]
+    #     return y_train
+    #
+    # # two waypoints
+    # elif range[1] - range[0] == 1:
+    #     y_train = [array[range[0], 0]                           ,  array[range[0], 1]                           ,
+    #                0.5*(array[range[0], 0] + array[range[1], 0]),  0.5*(array[range[0], 1] + array[range[1], 1]),
+    #                array[range[1], 0]                           ,  array[range[1], 1]                           ,]
+    #     return y_train
+    #
+    # # three waypoints
+    # elif range[1] - range[0] == 2:
+    #     y_train = [array[range[0], 0]  ,  array[range[0], 1]   ,
+    #                array[range[0]+1, 0],  array[range[0]+1, 1] ,
+    #                array[range[1], 0]  ,  array[range[1], 1]   ,]
+    #     return y_train
+    #
+    # # four waypoints
+    # elif range[1] - range[0] == 3:
+    #     y_train = [0.5 * (array[range[0], 0] + array[range[0]+1, 0])      , 0.5 * (array[range[0], 1] + array[range[0]+1, 1])      ,
+    #                0.5 * (array[range[1] - 1, 0] + array[range[1] + 1, 0]), 0.5 * (array[range[1] - 1, 1] + array[range[1] + 1, 1]),
+    #                0.5 * (array[range[1], 0] + array[range[1] - 1, 0])    , 0.5 * (array[range[1], 1] + array[range[1] - 1, 1])    ,]
+    #     return y_train
+    #
+    # elif range[1] - range[0] == 4:
+    #     y_train = [array[range[0], 0]  ,  array[range[0], 1]   ,
+    #                array[range[0]+2, 0],  array[range[0]+2, 1] ,
+    #                array[range[1], 0]  ,  array[range[1], 1]   ,]
+    #     return y_train
+    #
+    # # other cases(add if needed)
+    # else:
+    #     print "more than five waypoints"
+    #     print range
+    #     return [0, 0, 0, 0, 0, 0]
 
 
 if __name__ == '__main__':
