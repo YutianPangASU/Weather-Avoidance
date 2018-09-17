@@ -3,16 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 # import time
 
+
 class FAA_Parser(object):
 
     def __init__(self, call_sign, time):
 
-        #t0 = time.time()
+        # t0 = time.time()
         # n = sum(1 for line in open('data/IFF_USA_' + time + '_050000_86396.csv'))
         # print "loaded " + str(n) + " rows of data"
-        #print('Elapsed time : ', time.time() - t0)
+        # print('Elapsed time : ', time.time() - t0)
 
-        self.df = pd.read_csv('data/IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=1500000, names=range(0, 18))
+        self.df = pd.read_csv('data/IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=50000000, names=range(0, 18))
 
         # specific row numbers to keep
         self.rows = []

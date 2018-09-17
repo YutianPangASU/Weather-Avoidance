@@ -76,3 +76,10 @@ if os.path.exists("y_train.csv"):
   os.remove("y_train.csv")
 else:
   print("The file does not exist")
+
+
+# remove call_sign.txt
+if os.path.exists("call_sign.txt"):
+    os.remove("call_sign.txt")
+else:
+    print("The file does not exist")
