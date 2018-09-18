@@ -33,5 +33,5 @@ if __name__ == '__main__':
     fun = call_sign_parser(time, start_row_num, end_row_num)
     #fun.count_rows()
     call_sign = fun.parser()
-    with open('call_sign_small.csv', 'a') as file:
+    with open('call_sign_small.csv', 'w') as file:
         file.write("\n".join(call_sign))

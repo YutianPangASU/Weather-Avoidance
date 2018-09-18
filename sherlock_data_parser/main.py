@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 from utils import *
 import os
 import csv
-import sys
-import subprocess
+
 
 class FAA_ENGINE(object):
 
@@ -41,21 +40,19 @@ class FAA_ENGINE(object):
 
     def run_NATS(self, draw_traj = False):
 
-
-
-        FLIGHT_MODE_PREDEPARTURE = JPackage('com').osi.util.Constants.FLIGHT_MODE_PREDEPARTURE
-        FLIGHT_MODE_CLIMB = JPackage('com').osi.util.Constants.FLIGHT_MODE_CLIMB
-        FLIGHT_MODE_CRUISE = JPackage('com').osi.util.Constants.FLIGHT_MODE_CRUISE
-        FLIGHT_MODE_DESCENT = JPackage('com').osi.util.Constants.FLIGHT_MODE_DESCENT
-        FLIGHT_MODE_LANDED = JPackage('com').osi.util.Constants.FLIGHT_MODE_LANDED
-        FLIGHT_MODE_HOLDING = JPackage('com').osi.util.Constants.FLIGHT_MODE_HOLDING
-
-        NATS_SIMULATION_STATUS_READY = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_READY
-        NATS_SIMULATION_STATUS_START = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_START
-        NATS_SIMULATION_STATUS_PAUSE = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_PAUSE
-        NATS_SIMULATION_STATUS_RESUME = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_RESUME
-        NATS_SIMULATION_STATUS_STOP = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_STOP
-        NATS_SIMULATION_STATUS_ENDED = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_ENDED
+        # FLIGHT_MODE_PREDEPARTURE = JPackage('com').osi.util.Constants.FLIGHT_MODE_PREDEPARTURE
+        # FLIGHT_MODE_CLIMB = JPackage('com').osi.util.Constants.FLIGHT_MODE_CLIMB
+        # FLIGHT_MODE_CRUISE = JPackage('com').osi.util.Constants.FLIGHT_MODE_CRUISE
+        # FLIGHT_MODE_DESCENT = JPackage('com').osi.util.Constants.FLIGHT_MODE_DESCENT
+        # FLIGHT_MODE_LANDED = JPackage('com').osi.util.Constants.FLIGHT_MODE_LANDED
+        # FLIGHT_MODE_HOLDING = JPackage('com').osi.util.Constants.FLIGHT_MODE_HOLDING
+        #
+        # NATS_SIMULATION_STATUS_READY = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_READY
+        # NATS_SIMULATION_STATUS_START = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_START
+        # NATS_SIMULATION_STATUS_PAUSE = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_PAUSE
+        # NATS_SIMULATION_STATUS_RESUME = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_RESUME
+        # NATS_SIMULATION_STATUS_STOP = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_STOP
+        # NATS_SIMULATION_STATUS_ENDED = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_ENDED
 
         NATSClientFactory = JClass('NATSClientFactory')
 
@@ -84,6 +81,8 @@ class FAA_ENGINE(object):
                                         self.call_sign + "_mfl.trx")
         # default command
         aclist = aircraftInterface.getAllAircraftId()
+        if aclist is None:
+            return
 
         # coord = terminalAreaInterface.getWaypoint_Latitude_Longitude_deg('')  # get one waypoint coords
 
@@ -120,6 +119,7 @@ class FAA_ENGINE(object):
         # delete too close waypoints, usually happened during departure and landing process, not useful for cruise
         wp_idx = np.unique(np.round(waypoints, 2), axis=0, return_index=True)[1]
         waypoints = waypoints[np.sort(wp_idx)]
+        waypoints = waypoints[~np.isnan(waypoints).any(axis=1)]  # delete rows contains NaN
 
         print "Found " + str(len(wp_idx)) + " waypoints from the flight plan of flight " + self.call_sign
 
@@ -189,7 +189,7 @@ class FAA_ENGINE(object):
 if __name__ == '__main__':
 
     date = '20170406'
-    #call_sign = 'AMF744'
+    #call_sign = 'ACA1119'
 
     # start NATS server
     # start_NATS()
@@ -209,10 +209,11 @@ if __name__ == '__main__':
     with open('call_sign_small.csv') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
-            try:  # in case there is no flight plan information for a given call sign
+            #try:  # in case there is no flight plan information for a given call sign
                 count = count + 1
 
                 # run the FAA ENGINE to fetch data
+                #fun = FAA_ENGINE(call_sign, date)
                 fun = FAA_ENGINE(row[0], date)
                 fun.run_parser_and_save_files()
                 #fun.weather_contour()
@@ -220,7 +221,9 @@ if __name__ == '__main__':
                 fun.fetch_data(count)
 
                 print("Finish reading flight number " + str(count))
+
                 # delete objects and load a fresh FAA_ENGINE
                 del fun
-            except:
-                pass
+
+            #except:
+                #pass

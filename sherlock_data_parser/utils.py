@@ -66,7 +66,7 @@ def make_up_zeros(str):
     if len(str) == 2:
         return "00" + str
     if len(str) == 1:
-        return "00" + str
+        return "000" + str
 
 
 def calculate_max_distance(a, b, c):
