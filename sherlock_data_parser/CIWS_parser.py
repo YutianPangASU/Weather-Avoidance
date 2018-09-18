@@ -134,6 +134,9 @@ class load_ET(object):
         # resize the matrix to 100 by 100 using opencv function
         resized_values = cv.resize(values, (100, 100))
 
+        # normalize the data
+        scaled_values = scale_linear_bycolumn(resized_values, high=1.0, low=0.0)
+
         # load self.lon and self.lat
         self.lon = np.load('lon.npy')
         self.lat = np.load('lat.npy')
@@ -143,7 +146,7 @@ class load_ET(object):
         lat_new = np.linspace(self.lat[lat_start_idx], self.lat[lat_end_idx], num=100)
 
         # plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], resized_values)
-        plt.contourf(lon_new, lat_new, resized_values)
+        plt.contourf(lon_new, lat_new, scaled_values)
 
         if hold is True:
             plt.hold(True)
@@ -154,13 +157,16 @@ class load_ET(object):
         plt.savefig('x_train/' + str(call_sign) + ' ' + pin + ' ' + str(num))
         plt.hold(False)
 
+        # return the x_train matrix
+        return scaled_values
+
 
 if __name__ == '__main__':
 
     a = 2559500
     b = 1759500
     date = 20170406
-    #unix_time = 1491425432.000  # a wrong time
+    # unix_time = 1491425432.000  # a wrong time
     unix_time = 1491450567.000  # a correct time
     call_sign = 'AAL717'
 

@@ -13,7 +13,7 @@ class FAA_Parser(object):
         # print "loaded " + str(n) + " rows of data"
         # print('Elapsed time : ', time.time() - t0)
 
-        self.df = pd.read_csv('data/IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=50000000, names=range(0, 18))
+        self.df = pd.read_csv('data/IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=1500000, names=range(0, 18))
 
         # specific row numbers to keep
         self.rows = []
@@ -61,6 +61,6 @@ class FAA_Parser(object):
 
 if __name__ == '__main__':  # main function only for testing purpose
 
-    fun = FAA_Parser(call_sign='AAL717', time='20170406')
+    fun = FAA_Parser(call_sign='AAL1446', time='20170406')
     flight_plan__sequence_change_time, flight_plan_change_sequence, trajectory = fun.get_flight_plan()
     # fun.plot_real_trajectory()

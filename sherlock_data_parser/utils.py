@@ -4,6 +4,7 @@ import pandas as pd
 from numpy.linalg import norm
 from scipy import spatial
 import cv2 as cv
+import os
 
 
 def unixtime_to_datetime(unix_time):  # input can be an array
@@ -209,6 +210,22 @@ def extension(lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx):
         lon_end_idx = 5119
 
     return lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx
+
+
+def scale_linear_bycolumn(rawpoints, high=100.0, low=0.0):
+    mins = np.min(rawpoints, axis=0)
+    maxs = np.max(rawpoints, axis=0)
+    rng = maxs - mins
+    out = high - (((high - low) * (maxs - rawpoints)) / rng)
+    return np.nan_to_num(out)
+
+
+def start_NATS():   # start NATS server
+    #subprocess.call(['run_NATS'])
+    cwd = os.getcwd()
+    os.chdir("/mnt/data/NATS/NATS_server")
+    os.system('./run')
+    os.chdir(cwd)
 
 
 if __name__ == '__main__':

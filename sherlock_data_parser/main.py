@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from utils import *
 import os
 import csv
-
+import sys
+import subprocess
 
 class FAA_ENGINE(object):
 
@@ -16,6 +17,7 @@ class FAA_ENGINE(object):
         self.threshold = 0.2
         self.lon = np.load('lon.npy')
         self.lat = np.load('lat.npy')
+
 
     def run_parser_and_save_files(self):
 
@@ -39,10 +41,7 @@ class FAA_ENGINE(object):
 
     def run_NATS(self, draw_traj = False):
 
-        os.environ['NATS_CLIENT_HOME']='/mnt/data/NATS/NATS_Client/'
-        classpath = "/mnt/data/NATS/NATS_Client/dist/nats-client.jar:/mnt/data/NATS/NATS_Client/dist/nats-shared.jar"
 
-        startJVM(getDefaultJVMPath(), "-ea", "-Djava.class.path=%s" % classpath)
 
         FLIGHT_MODE_PREDEPARTURE = JPackage('com').osi.util.Constants.FLIGHT_MODE_PREDEPARTURE
         FLIGHT_MODE_CLIMB = JPackage('com').osi.util.Constants.FLIGHT_MODE_CLIMB
@@ -114,7 +113,7 @@ class FAA_ENGINE(object):
         plt.hold(False)
         # plt.show()
 
-    def fetch_data(self):
+    def fetch_data(self, count):
 
         waypoints = np.genfromtxt("flight_plan_coords/" + self.call_sign + '_' + str(0) + '.csv', delimiter=",")
 
@@ -180,21 +179,47 @@ class FAA_ENGINE(object):
                 csvwriter.writerow(y_train)
 
             # save x_train
-            load_ET(self.time).crop_weather_contour(i, self.flight_plan_sequence_change_time[0], self.call_sign,
+            x_train = load_ET(self.time).crop_weather_contour(i, self.flight_plan_sequence_change_time[0], self.call_sign,
                                                     lat_start_idx_extended, lat_end_idx_extended,
                                                     lon_start_idx_extended, lon_end_idx_extended,
                                                     y_train, hold=True)
+            np.save('x_train_npy/' + str(count) + str(i) + '.npy', x_train)
 
 
 if __name__ == '__main__':
 
     date = '20170406'
-    call_sign = 'AAL1362'
+    #call_sign = 'AAL1446'
 
-    np.warnings.filterwarnings('ignore')  # ignore matplotlib warnings
+    # start NATS server
+    # start_NATS()
 
-    fun = FAA_ENGINE(call_sign, date)
-    fun.run_parser_and_save_files()
-    #fun.weather_contour()
-    fun.run_NATS(draw_traj=True)
-    fun.fetch_data()
+    # start JVM
+    os.environ['NATS_CLIENT_HOME'] = '/mnt/data/NATS/NATS_Client/'
+    classpath = "/mnt/data/NATS/NATS_Client/dist/nats-client.jar:/mnt/data/NATS/NATS_Client/dist/nats-shared.jar"
+    startJVM(getDefaultJVMPath(), "-ea", "-Djava.class.path=%s" % classpath)
+    print("JVM Started")
+
+    # ignore matplot warning
+    np.warnings.filterwarnings('ignore')
+
+    # flight call sign count index
+    count = 0
+
+    with open('call_sign_small.csv') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            try:  # in case there is no flight plan information for a given call sign
+
+                # run the FAA ENGINE to fetch data
+                fun = FAA_ENGINE(row[0], date)
+                fun.run_parser_and_save_files()
+                #fun.weather_contour()
+                fun.run_NATS(draw_traj=True)
+                fun.fetch_data(count)
+                count = count + 1
+                print("Finish reading flight number " + str(count))
+                # delete objects and load a fresh FAA_ENGINE
+                del fun
+            except:
+                pass
