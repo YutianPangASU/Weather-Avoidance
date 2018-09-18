@@ -189,7 +189,7 @@ class FAA_ENGINE(object):
 if __name__ == '__main__':
 
     date = '20170406'
-    #call_sign = 'AAL1446'
+    #call_sign = 'AMF744'
 
     # start NATS server
     # start_NATS()
@@ -210,6 +210,7 @@ if __name__ == '__main__':
         reader = csv.reader(csvfile)
         for row in reader:
             try:  # in case there is no flight plan information for a given call sign
+                count = count + 1
 
                 # run the FAA ENGINE to fetch data
                 fun = FAA_ENGINE(row[0], date)
@@ -217,7 +218,7 @@ if __name__ == '__main__':
                 #fun.weather_contour()
                 fun.run_NATS(draw_traj=True)
                 fun.fetch_data(count)
-                count = count + 1
+
                 print("Finish reading flight number " + str(count))
                 # delete objects and load a fresh FAA_ENGINE
                 del fun
