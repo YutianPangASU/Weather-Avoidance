@@ -40,41 +40,6 @@ class FAA_ENGINE(object):
 
     def run_NATS(self, draw_traj = False):
 
-        # FLIGHT_MODE_PREDEPARTURE = JPackage('com').osi.util.Constants.FLIGHT_MODE_PREDEPARTURE
-        # FLIGHT_MODE_CLIMB = JPackage('com').osi.util.Constants.FLIGHT_MODE_CLIMB
-        # FLIGHT_MODE_CRUISE = JPackage('com').osi.util.Constants.FLIGHT_MODE_CRUISE
-        # FLIGHT_MODE_DESCENT = JPackage('com').osi.util.Constants.FLIGHT_MODE_DESCENT
-        # FLIGHT_MODE_LANDED = JPackage('com').osi.util.Constants.FLIGHT_MODE_LANDED
-        # FLIGHT_MODE_HOLDING = JPackage('com').osi.util.Constants.FLIGHT_MODE_HOLDING
-        #
-        # NATS_SIMULATION_STATUS_READY = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_READY
-        # NATS_SIMULATION_STATUS_START = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_START
-        # NATS_SIMULATION_STATUS_PAUSE = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_PAUSE
-        # NATS_SIMULATION_STATUS_RESUME = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_RESUME
-        # NATS_SIMULATION_STATUS_STOP = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_STOP
-        # NATS_SIMULATION_STATUS_ENDED = JPackage('com').osi.util.Constants.NATS_SIMULATION_STATUS_ENDED
-
-        NATSClientFactory = JClass('NATSClientFactory')
-
-        natsClient = NATSClientFactory.getNATSClient()
-        sim = natsClient.getSimulationInterface()
-
-        # Get EquipmentInterface
-        equipmentInterface = natsClient.getEquipmentInterface()
-        # Get AircraftInterface
-        aircraftInterface = equipmentInterface.getAircraftInterface()
-
-        # Get EnvironmentInterface
-        environmentInterface = natsClient.getEnvironmentInterface()
-        # Get AirportInterface
-        airportInterface = environmentInterface.getAirportInterface()
-        # Get TerminalAreaInterface
-        terminalAreaInterface = environmentInterface.getTerminalAreaInterface()
-
-        # default command
-        sim.clear_trajectory()
-        environmentInterface.load_rap("share/tg/rap")
-
         # load trx files
         aircraftInterface.load_aircraft('/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" + self.call_sign +
                                         ".trx", '/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" +
@@ -189,9 +154,11 @@ class FAA_ENGINE(object):
 if __name__ == '__main__':
 
     date = '20170406'
-    #call_sign = 'ACA1119'
+    # flight call sign count index
+    count = 0
 
     # start NATS server
+    # need to start a new process, not finished
     # start_NATS()
 
     # start JVM
@@ -200,23 +167,36 @@ if __name__ == '__main__':
     startJVM(getDefaultJVMPath(), "-ea", "-Djava.class.path=%s" % classpath)
     print("JVM Started")
 
+    NATSClientFactory = JClass('NATSClientFactory')
+
+    natsClient = NATSClientFactory.getNATSClient()
+    sim = natsClient.getSimulationInterface()
+
+    # Get EquipmentInterface
+    equipmentInterface = natsClient.getEquipmentInterface()
+    # Get AircraftInterface
+    aircraftInterface = equipmentInterface.getAircraftInterface()
+
+    # Get EnvironmentInterface
+    environmentInterface = natsClient.getEnvironmentInterface()
+
+    # default command
+    sim.clear_trajectory()
+    environmentInterface.load_rap("share/tg/rap")
+
     # ignore matplot warning
     np.warnings.filterwarnings('ignore')
-
-    # flight call sign count index
-    count = 0
 
     with open('call_sign_small.csv') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
-            #try:  # in case there is no flight plan information for a given call sign
+            try:  # in case there is no flight plan information for a given call sign
                 count = count + 1
 
                 # run the FAA ENGINE to fetch data
-                #fun = FAA_ENGINE(call_sign, date)
                 fun = FAA_ENGINE(row[0], date)
                 fun.run_parser_and_save_files()
-                #fun.weather_contour()
+                # fun.weather_contour()
                 fun.run_NATS(draw_traj=True)
                 fun.fetch_data(count)
 
@@ -225,5 +205,6 @@ if __name__ == '__main__':
                 # delete objects and load a fresh FAA_ENGINE
                 del fun
 
-            #except:
-                #pass
+            except:
+                pass
+

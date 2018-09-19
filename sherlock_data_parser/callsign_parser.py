@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     time = 20170406
     start_row_num = 0
-    end_row_num = 500000
+    end_row_num = 10000000
 
     fun = call_sign_parser(time, start_row_num, end_row_num)
     #fun.count_rows()

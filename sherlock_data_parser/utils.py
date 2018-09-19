@@ -27,7 +27,8 @@ def save_trx(list, filename, time):
 
     fm = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + filename + '_mfl.trx', 'wb')
 
-    for i in range(len(list)):
+    # for i in range(len(list)):
+    for i in range(1):  # only save one flight plan in a trx file
         f.write("TRACK A" + str(i) + " ALOR1 370500N 1030900W 470 360 0 ZAB ZAB71\n")
         f.write("FP_ROUTE " + list[i] + "\n\n")
         fm.write("A" + str(i) + " 400\n")
