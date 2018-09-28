@@ -79,16 +79,17 @@ class FAA_Parser(object):
                 flight_plan_change_time.append(flight_plan_change_time_chunk)
                 track_point = np.concatenate((track_point, track_point_chunk), axis=0)
 
-        return flight_plan_change_time, flight_plan_change, track_point
+        return flight_plan_change_time[0], flight_plan_change[0], track_point
 
 
 if __name__ == '__main__':  # main function only for testing purpose
 
     call_sign = 'AAL1227'
     time = '20170406'
+
     chunk_size = 1e6
 
     fun = FAA_Parser(call_sign, time, chunk_size)
     flight_plan_sequence_change_time, flight_plan_change_sequence, trajectory = fun.get_flight_plan()
     save_csv(trajectory, call_sign, time)
-    save_trx(flight_plan_change_sequence[0], call_sign, time)  # save trx files
+    save_trx(flight_plan_change_sequence, call_sign, time)  # save trx files
