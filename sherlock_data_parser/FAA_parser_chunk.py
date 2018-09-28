@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import time
-from utils import *
 
 
 class FAA_Parser(object):
@@ -79,17 +78,67 @@ class FAA_Parser(object):
                 flight_plan_change_time.append(flight_plan_change_time_chunk)
                 track_point = np.concatenate((track_point, track_point_chunk), axis=0)
 
-        return flight_plan_change_time[0], flight_plan_change[0], track_point
+        return flight_plan_change_time, flight_plan_change, track_point
+
+
+class save_files(object):
+
+    def __init__(self, list, filename, time):
+
+        self.list = list
+        self.filename = filename
+        self.time = time
+
+    def save_trx(self):
+
+        if len(self.list) == 1:
+
+            f = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + self.filename + '.trx', 'wb')
+            f.write("TRACK_TIME 1121238067\n\n")
+
+            fm = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + self.filename + '_mfl.trx', 'wb')
+
+            for i in range(len(self.list)):
+            #for i in range(1):  # only save one flight plan in a trx file
+                f.write("TRACK A" + str(i) + " ALOR1 370500N 1030900W 470 360 0 ZAB ZAB71\n")
+                f.write("FP_ROUTE " + self.list[i] + "\n\n")
+                fm.write("A" + str(i) + " 400\n")
+
+            f.close()
+            fm.close()
+        else:
+            for j in range(len(self.list)):
+
+                f = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + self.filename + "_" + str(j) + '.trx', 'wb')
+                f.write("TRACK_TIME 1121238067\n\n")
+
+                fm = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + self.filename + "_" + str(j) + '_mfl.trx',
+                          'wb')
+
+                for i in range(len(self.list[j])):
+                #for i in range(1):  # only save one flight plan in a trx file
+                    f.write("TRACK A" + str(i) + " ALOR1 370500N 1030900W 470 360 0 ZAB ZAB71\n")
+                    f.write("FP_ROUTE " + self.list[j][i] + "\n\n")
+                    fm.write("A" + str(i) + " 400\n")
+
+                f.close()
+                fm.close()
+
+    def save_csv(self):
+
+        my_df = pd.DataFrame(self.list)
+        my_df.to_csv("/mnt/data/WeatherCNN/sherlock/traj_csv/" + time + "_" + self.filename + '.csv', index=False,
+                     header=False)
 
 
 if __name__ == '__main__':  # main function only for testing purpose
 
-    call_sign = 'AAL1227'
+    call_sign = 'AAL717'
     time = '20170406'
 
     chunk_size = 1e6
 
     fun = FAA_Parser(call_sign, time, chunk_size)
     flight_plan_sequence_change_time, flight_plan_change_sequence, trajectory = fun.get_flight_plan()
-    save_csv(trajectory, call_sign, time)
-    save_trx(flight_plan_change_sequence, call_sign, time)  # save trx files
+    save_files(trajectory, call_sign, time).save_csv()
+    save_files(flight_plan_change_sequence, call_sign, time).save_trx()  # save trx files
