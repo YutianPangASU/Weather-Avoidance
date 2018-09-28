@@ -84,11 +84,11 @@ class FAA_Parser(object):
 
 if __name__ == '__main__':  # main function only for testing purpose
 
-    call_sign = 'ACA759'
+    call_sign = 'AAL1227'
     time = '20170406'
     chunk_size = 1e6
 
     fun = FAA_Parser(call_sign, time, chunk_size)
     flight_plan_sequence_change_time, flight_plan_change_sequence, trajectory = fun.get_flight_plan()
     save_csv(trajectory, call_sign, time)
-    save_trx(flight_plan_change_sequence, call_sign, time)  # save trx files
+    save_trx(flight_plan_change_sequence[0], call_sign, time)  # save trx files
