@@ -42,8 +42,7 @@ class FAA_Parser(object):
 
         for chunk in df:
 
-            i = i + 1
-            print "reading chunk number " + str(i)
+            print "reading chunk number " + str(i + 1)
 
             # self.rows.extend(chunk.index[chunk[7] == self.call_sign])
             # if self.rows.__len__() != 0:
