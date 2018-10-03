@@ -38,7 +38,7 @@ class FAA_Parser(object):
 
         flight_plan_change_time = []
         flight_plan_change = []
-        track_point = np.empty((0, 4))
+        track_point = np.empty((0, 7))
 
         for chunk in df:
 
@@ -56,7 +56,7 @@ class FAA_Parser(object):
             data = chunk.ix[self.rows][self.cols]
 
             # clear ? and nan values in the dataframe
-            data = data.replace({'?': np.nan}).dropna()
+            # data = data.replace({'?': np.nan}).dropna()
 
             # divide data into flight plan and track point
             track_point_chunk = np.asarray(data[data[0] == 3])
@@ -70,12 +70,13 @@ class FAA_Parser(object):
             flight_plan_change_time_chunk = flight_plan_chunk[:, 1]
             flight_plan_change_chunk = flight_plan_chunk[:, -1]
 
-            track_point_chunk = np.delete(track_point_chunk, [0, 2, -2], axis=1)  # col1:unix time, col2:lon, col3:lat
+            track_point_chunk = np.delete(track_point_chunk, [0, 2, 8], axis=1)  # col1:unix time, col2:lon, col3:lat
             track_point_chunk[:, [1, 2]] = track_point_chunk[:, [2, 1]]  # swap lat and lon
 
             if flight_plan_change_chunk.size != 0:
                 flight_plan_change.append(flight_plan_change_chunk)
                 flight_plan_change_time.append(flight_plan_change_time_chunk)
+            if track_point_chunk.size != 0:
                 track_point = np.concatenate((track_point, track_point_chunk), axis=0)
 
         return flight_plan_change_time, flight_plan_change, track_point
@@ -100,7 +101,7 @@ class save_files(object):
 
             for i in range(len(self.list[j])):
                 f.write("TRACK A" + str(i) + " ALOR1 370500N 1030900W 470 360 0 ZAB ZAB71\n")
-                f.write("FP_ROUTE " + self.list[j][i] + "\n\n")
+                f.write("FP_ROUTE " + str(self.list[j][i]) + "\n\n")
                 fm.write("A" + str(i) + " 400\n")
 
             f.close()
