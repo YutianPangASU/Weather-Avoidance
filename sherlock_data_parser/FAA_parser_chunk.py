@@ -16,7 +16,7 @@ class FAA_Parser(object):
 
         # specific colomn numbers to keep
         # cols = [0, 1, 7, 17]  # flightID, time, flight number, flight plan
-        self.cols = [0, 1, 7, 9, 10, 11, 17]  # include lat and lon
+        self.cols = [0, 1, 7, 9, 10, 11, 12, 16, 17, 18]  # include lat and lon
 
         # track point is the array to store trajectories
         # self.track_point = []
@@ -34,14 +34,14 @@ class FAA_Parser(object):
         i = 0
 
         df = pd.read_csv('data/IFF_USA_' + self.time + '_050000_86396.csv', chunksize=self.chunk_size, iterator=True,
-                         names=range(0, 18), low_memory=False)
+                         names=range(0, 19), low_memory=False)
 
         flight_plan_change_time = []
         flight_plan_change = []
         track_point = np.empty((0, 4))
 
         for chunk in df:
-            
+
             i = i + 1
             print "reading chunk number " + str(i)
 
@@ -70,8 +70,8 @@ class FAA_Parser(object):
             flight_plan_change_time_chunk = flight_plan_chunk[:, 1]
             flight_plan_change_chunk = flight_plan_chunk[:, -1]
 
-            track_point_chunk = np.delete(track_point_chunk, [0, 2, 6], axis=1)  # col1:unix time, col2:lon, col3:lat
-            track_point_chunk[:, [1, 2]] = track_point_chunk[:, [2, 1]]  # swap last two colomns
+            track_point_chunk = np.delete(track_point_chunk, [0, 2, -2], axis=1)  # col1:unix time, col2:lon, col3:lat
+            track_point_chunk[:, [1, 2]] = track_point_chunk[:, [2, 1]]  # swap lat and lon
 
             if flight_plan_change_chunk.size != 0:
                 flight_plan_change.append(flight_plan_change_chunk)
@@ -115,7 +115,7 @@ class save_files(object):
 
 if __name__ == '__main__':
 
-    call_sign = 'ACA759'
+    call_sign = 'AAL717'
     time = '20170406'
 
     chunk_size = 1e6
