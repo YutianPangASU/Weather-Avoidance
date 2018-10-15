@@ -17,7 +17,6 @@ class FAA_ENGINE(object):
         self.lon = np.load('lon.npy')
         self.lat = np.load('lat.npy')
 
-
     def run_parser_and_save_files(self):
 
         self.flight_plan_sequence_change_time, self.flight_plan_change_sequence, self.traj = \
@@ -55,6 +54,7 @@ class FAA_ENGINE(object):
             ac = aircraftInterface.select_aircraft(aclist[i])
             lon = ac.getFlight_plan_longitude_array()
             lat = ac.getFlight_plan_latitude_array()
+
             # save original flightplan waypoint coords as a csv file
             if i == 0:
                 np.savetxt("flight_plan_coords/" + self.call_sign + "_" + str(i) + ".csv",
@@ -84,7 +84,7 @@ class FAA_ENGINE(object):
         # delete too close waypoints, usually happened during departure and landing process, not useful for cruise
         wp_idx = np.unique(np.round(waypoints, 2), axis=0, return_index=True)[1]
         waypoints = waypoints[np.sort(wp_idx)]
-        waypoints = waypoints[~np.isnan(waypoints).any(axis=1)]  # delete rows contains NaN
+        waypoints = waypoints[~np.isnan(waypoints).any(axis=1)]  # delete rows contain NaN
 
         print "Found " + str(len(wp_idx)) + " waypoints from the flight plan of flight " + self.call_sign
 
@@ -120,10 +120,36 @@ class FAA_ENGINE(object):
             print "start waypoint: " + str(start_pt)  # start point of the weather contour
             print "return waypoint: " + str(end_pt)  # end point of the weather contour
 
-            lon_start_idx = find_nearest_index(self.lon, start_pt[0])
-            lon_end_idx = find_nearest_index(self.lon, end_pt[0])
-            lat_start_idx = find_nearest_index(self.lat, start_pt[1])
-            lat_end_idx = find_nearest_index(self.lat, end_pt[1])
+            # lon_start_idx = find_nearest_index(self.lon, start_pt[0])
+            # lon_end_idx = find_nearest_index(self.lon, end_pt[0])
+            # lat_start_idx = find_nearest_index(self.lat, start_pt[1])
+            # lat_end_idx = find_nearest_index(self.lat, end_pt[1])
+            #
+            # lon_start_idx, lon_end_idx = sorted([lon_start_idx, lon_end_idx])
+            # lat_start_idx, lat_end_idx = sorted([lat_start_idx, lat_end_idx])
+            #
+            # if lon_start_idx == lon_end_idx:
+            #     lon_end_idx = lon_end_idx + 1
+            # if lat_start_idx == lat_end_idx:
+            #     lat_end_idx = lat_end_idx + 1
+
+            # extend latitude and longitude by 50% outside each boundary
+            # lat_start_idx_extended, lat_end_idx_extended, lon_start_idx_extended, lon_end_idx_extended = \
+            #     extension(lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx)
+
+            # save y_train
+            y_train = np.asarray(get_y_train(wp_range[i], max_point, start_pt, end_pt))
+            with open('y_train.csv', 'a') as csvfile:
+                csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                csvwriter.writerow(y_train)
+
+            # draw a circle area for weather contour
+            lon_start_new, lon_end_new, lat_start_new, lat_end_new = max_radius(y_train, start_pt, end_pt)
+
+            lon_start_idx = find_nearest_index(self.lon, lon_start_new)
+            lon_end_idx = find_nearest_index(self.lon, lon_end_new)
+            lat_start_idx = find_nearest_index(self.lat, lat_start_new)
+            lat_end_idx = find_nearest_index(self.lat, lat_end_new)
 
             lon_start_idx, lon_end_idx = sorted([lon_start_idx, lon_end_idx])
             lat_start_idx, lat_end_idx = sorted([lat_start_idx, lat_end_idx])
@@ -133,27 +159,18 @@ class FAA_ENGINE(object):
             if lat_start_idx == lat_end_idx:
                 lat_end_idx = lat_end_idx + 1
 
-            # extend latitude and longitude by 50% at each boundary
-            lat_start_idx_extended, lat_end_idx_extended, lon_start_idx_extended, lon_end_idx_extended = \
-                extension(lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx)
-
-            # save y_train
-            y_train = np.asarray(get_y_train(wp_range[i], max_point, start_pt, end_pt))
-            with open('y_train.csv', 'a') as csvfile:
-                csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                csvwriter.writerow(y_train)
-
             # save x_train
             x_train = load_ET(self.time).crop_weather_contour(i, self.flight_plan_sequence_change_time[0], self.call_sign,
-                                                    lat_start_idx_extended, lat_end_idx_extended,
-                                                    lon_start_idx_extended, lon_end_idx_extended,
+                                                    lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0],
                                                     y_train, hold=True)
+
             np.save('x_train_npy/' + str(count) + str(i) + '.npy', x_train)
 
 
 if __name__ == '__main__':
 
     date = '20170406'
+
     # flight call sign count index
     count = 0
 
@@ -193,8 +210,11 @@ if __name__ == '__main__':
             try:  # in case there is no flight plan information for a given call sign
                 count = count + 1
 
+                print("Start reading flight number " + str(count))
+
                 # run the FAA ENGINE to fetch data
-                fun = FAA_ENGINE(row[0], date)
+                #fun = FAA_ENGINE(row[0], date)
+                fun = FAA_ENGINE("AAL1275", date)
                 fun.run_parser_and_save_files()
                 # fun.weather_contour()
                 fun.run_NATS(draw_traj=True)

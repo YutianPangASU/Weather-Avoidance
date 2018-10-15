@@ -5,6 +5,7 @@ from numpy.linalg import norm
 from scipy import spatial
 import cv2 as cv
 import os
+import math
 
 
 def unixtime_to_datetime(unix_time):  # input can be an array
@@ -16,8 +17,8 @@ def unixtime_to_datetime(unix_time):  # input can be an array
 
 def save_csv(list, filename, time):
 
-    my_df = pd.DataFrame(list)
-    my_df.to_csv("/mnt/data/WeatherCNN/sherlock/traj_csv/" + time + "_" + filename + '.csv', index=False, header=False)
+        my_df = pd.DataFrame(list)
+        my_df.to_csv("/mnt/data/WeatherCNN/sherlock/traj_csv/" + time + "_" + filename + '.csv', index=False, header=False)
 
 
 def save_trx(list, filename, time):
@@ -227,6 +228,29 @@ def start_NATS():   # start NATS server
     os.chdir("/mnt/data/NATS/NATS_server")
     os.system('./run')
     os.chdir(cwd)
+
+
+def max_radius(list, start, end):
+    # list is an 1 by 6 array which is the coords of three waypoints
+    # start is the start point; end is the end point
+
+    a = list[0:2]
+    b = list[2:4]
+    c = list[4:6]
+    mid = 0.5 * (start + end)  # mid used as the centre of the circle area
+
+    r1 = math.sqrt((mid[0] - start[0]) ** 2 + (mid[1] - start[1]) ** 2)
+    r2 = math.sqrt((mid[0] - a[0]) ** 2 + (mid[1] - a[1]) ** 2)
+    r3 = math.sqrt((mid[0] - b[0]) ** 2 + (mid[1] - b[1]) ** 2)
+    r4 = math.sqrt((mid[0] - c[0]) ** 2 + (mid[1] - c[1]) ** 2)
+    r = max([r1, r2, r3, r4])
+
+    lon_start_new = mid[0] - r
+    lat_start_new = mid[1] - r
+    lon_end_new = mid[0] + r
+    lat_end_new = mid[1] + r
+
+    return lon_start_new, lon_end_new, lat_start_new, lat_end_new
 
 
 if __name__ == '__main__':
