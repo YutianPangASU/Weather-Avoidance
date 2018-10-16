@@ -110,6 +110,8 @@ class FAA_ENGINE(object):
 
         wp_range = ranges(np.squeeze(np.where(max_distance > self.threshold)))
 
+        wp_time = np.genfromtxt("traj_csv/" + self.time + "_" + self.call_sign + '.csv', delimiter=",")[:, 0]
+
         print "Found " + str(len(wp_range)) + " useful data points from the database of flight " + self.call_sign
 
         # save picture depending on the plot range information
@@ -119,6 +121,9 @@ class FAA_ENGINE(object):
             end_pt = waypoints[wp_range[i][1] + 1]
             print "start waypoint: " + str(start_pt)  # start point of the weather contour
             print "return waypoint: " + str(end_pt)  # end point of the weather contour
+
+            wp_time_idx = spatial.KDTree(trajectory).query(start_pt)[1]
+            weather_plot_time = wp_time[wp_time_idx]
 
             # lon_start_idx = find_nearest_index(self.lon, start_pt[0])
             # lon_end_idx = find_nearest_index(self.lon, end_pt[0])
@@ -154,13 +159,13 @@ class FAA_ENGINE(object):
             lon_start_idx, lon_end_idx = sorted([lon_start_idx, lon_end_idx])
             lat_start_idx, lat_end_idx = sorted([lat_start_idx, lat_end_idx])
 
-            if lon_start_idx == lon_end_idx:
-                lon_end_idx = lon_end_idx + 1
-            if lat_start_idx == lat_end_idx:
-                lat_end_idx = lat_end_idx + 1
+            # if lon_start_idx == lon_end_idx:
+            #     lon_end_idx = lon_end_idx + 1
+            # if lat_start_idx == lat_end_idx:
+            #     lat_end_idx = lat_end_idx + 1
 
             # save x_train
-            x_train = load_ET(self.time).crop_weather_contour(i, self.flight_plan_sequence_change_time[0], self.call_sign,
+            x_train = load_ET(self.time).crop_weather_contour(i, weather_plot_time, self.call_sign,
                                                     lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0],
                                                     y_train, hold=True)
 
@@ -213,8 +218,8 @@ if __name__ == '__main__':
                 print("Start reading flight number " + str(count))
 
                 # run the FAA ENGINE to fetch data
-                #fun = FAA_ENGINE(row[0], date)
-                fun = FAA_ENGINE("AAL1275", date)
+                fun = FAA_ENGINE(row[0], date)
+                #fun = FAA_ENGINE("AAL111", date)
                 fun.run_parser_and_save_files()
                 # fun.weather_contour()
                 fun.run_NATS(draw_traj=True)

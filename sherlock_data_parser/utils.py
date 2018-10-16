@@ -243,7 +243,7 @@ def max_radius(list, start, end):
     r2 = math.sqrt((mid[0] - a[0]) ** 2 + (mid[1] - a[1]) ** 2)
     r3 = math.sqrt((mid[0] - b[0]) ** 2 + (mid[1] - b[1]) ** 2)
     r4 = math.sqrt((mid[0] - c[0]) ** 2 + (mid[1] - c[1]) ** 2)
-    r = max([r1, r2, r3, r4])
+    r = 1.5 * max([r1, r2, r3, r4])
 
     lon_start_new = mid[0] - r
     lat_start_new = mid[1] - r

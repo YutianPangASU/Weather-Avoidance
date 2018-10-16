@@ -151,7 +151,7 @@ class load_ET(object):
         if hold is True:
             plt.hold(True)
             plt.plot(y_train[0], y_train[1], 'r*', y_train[2], y_train[3], 'g*', y_train[4], y_train[5], 'b*')
-        # plt.show()
+        #plt.show()
 
         # save figure
         plt.savefig('x_train/' + str(call_sign) + ' ' + pin + ' ' + str(num))
