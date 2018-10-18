@@ -18,15 +18,15 @@ def unixtime_to_datetime(unix_time):  # input can be an array
 def save_csv(list, filename, time):
 
         my_df = pd.DataFrame(list)
-        my_df.to_csv("/mnt/data/WeatherCNN/sherlock/traj_csv/" + time + "_" + filename + '.csv', index=False, header=False)
+        my_df.to_csv("./traj_csv/" + time + "_" + filename + '.csv', index=False, header=False)
 
 
 def save_trx(list, filename, time):
 
-    f = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + filename + '.trx', 'wb')
+    f = open('./cache/' + time + "_" + filename + '.trx', 'wb')
     f.write("TRACK_TIME 1121238067\n\n")
 
-    fm = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + filename + '_mfl.trx', 'wb')
+    fm = open('./cache/' + time + "_" + filename + '_mfl.trx', 'wb')
 
     # for i in range(len(list)):
     for i in range(1):  # only save one flight plan in a trx file

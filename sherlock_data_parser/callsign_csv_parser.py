@@ -25,7 +25,7 @@ class FAA_Parser(object):
         # chunk number index
         i = 0
 
-        df = pd.read_csv('data/IFF_USA_' + self.time + '_050000_86396.csv', chunksize=self.chunk_size, iterator=True,
+        df = pd.read_csv('data/IFF_USA_' + self.time + '.csv', chunksize=self.chunk_size, iterator=True,
                          names=range(0, 18), low_memory=False)
 
         self.track_point = np.empty((0, 18))

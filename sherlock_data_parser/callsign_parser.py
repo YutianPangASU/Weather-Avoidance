@@ -6,13 +6,13 @@ class call_sign_parser(object):
 
     def __init__(self, time, start_row_num, end_row_num):
 
-        self.df = pd.read_csv('data/IFF_USA_' + str(time) + '_050000_86396.csv', skiprows=start_row_num,
+        self.df = pd.read_csv('data/IFF_USA_' + str(time) + '.csv', skiprows=start_row_num,
                               nrows=end_row_num, names=range(0, 8), index_col=False)
         self.cols = [0, 7]
 
     def count_rows(self):
 
-        n = sum(1 for line in open('data/IFF_USA_' + str(time) + '_050000_86396.csv'))
+        n = sum(1 for line in open('data/IFF_USA_' + str(time) + '.csv'))
         print "loaded " + str(n) + " rows of data"
 
     def parser(self):

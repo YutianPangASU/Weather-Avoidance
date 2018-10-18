@@ -33,20 +33,17 @@ class FAA_ENGINE(object):
 
     def run_NATS(self, draw_traj = False):
 
-        if os.path.exists('/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" + self.call_sign + ".trx") is False:
+        if os.path.exists(os.getcwd() + '/cache/' + self.time + "_" + self.call_sign + ".trx") is False:
             return
 
         # load trx files
-        aircraftInterface.load_aircraft('/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" + self.call_sign +
-                                        ".trx", '/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" +
-                                        self.call_sign + "_mfl.trx")
+        aircraftInterface.load_aircraft(os.getcwd() + '/cache/' + self.time + "_" + self.call_sign + ".trx",
+                                        os.getcwd() + '/cache/' + self.time + "_" + self.call_sign + "_mfl.trx")
 
         # default command
         aclist = aircraftInterface.getAllAircraftId()
         if aclist is None:
             return
-
-        # coord = terminalAreaInterface.getWaypoint_Latitude_Longitude_deg('')  # get one waypoint coords
 
         for i in range(len(aclist)):
             ac = aircraftInterface.select_aircraft(aclist[i])
@@ -172,7 +169,7 @@ class FAA_ENGINE(object):
             #     lat_end_idx = lat_end_idx + 1
 
             # save x_train
-            x_train = load_ET(self.time).crop_weather_contour(i, weather_plot_time, self.call_sign,
+            x_train = load_ET(self.time).crop_weather_contour_ET(i, weather_plot_time, self.call_sign,
                                                     lat_start_idx[0], lat_end_idx[0], lon_start_idx[0], lon_end_idx[0],
                                                     y_train,
                                                     lon_start_idx_ori[0], lon_end_idx_ori[0], lat_start_idx_ori[0], lat_end_idx_ori[0],
@@ -228,7 +225,7 @@ if __name__ == '__main__':
 
                 # run the FAA ENGINE to fetch data
                 fun = FAA_ENGINE(row[0], date)
-                #fun = FAA_ENGINE("AAL717", date)
+                #fun = FAA_ENGINE("LBQ873", date)
                 fun.run_parser_and_save_files()
                 # fun.weather_contour()
                 fun.run_NATS(draw_traj=True)

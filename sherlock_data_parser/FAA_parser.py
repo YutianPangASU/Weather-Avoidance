@@ -13,7 +13,7 @@ class FAA_Parser(object):
         # print "loaded " + str(n) + " rows of data"
         # print('Elapsed time : ', time.time() - t0)
 
-        self.df = pd.read_csv('data/IFF_USA_' + time + '_050000_86396.csv', skiprows=0, nrows=5000000, names=range(0, 18))
+        self.df = pd.read_csv('data/IFF_USA_' + time + '.csv', skiprows=0, nrows=5000000, names=range(0, 18))
 
         # specific row numbers to keep
         self.rows = []

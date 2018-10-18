@@ -24,7 +24,7 @@ class FAA_Parser(object):
     def count_rows(self):
 
         t0 = time.time()
-        n = sum(1 for line in open('data/IFF_USA_' + self.time + '_050000_86396.csv'))
+        n = sum(1 for line in open('data/IFF_USA_' + self.time + '.csv'))
         print "loaded " + str(n) + " rows of data"
         print('Elapsed time : ', time.time() - t0)
 
@@ -33,7 +33,7 @@ class FAA_Parser(object):
         # chunk number index
         i = 0
 
-        df = pd.read_csv('data/IFF_USA_' + self.time + '_050000_86396.csv', chunksize=self.chunk_size, iterator=True,
+        df = pd.read_csv('data/IFF_USA_' + self.time + '.csv', chunksize=self.chunk_size, iterator=True,
                          names=range(0, 19), low_memory=False)
 
         flight_plan_change_time = []
@@ -94,10 +94,10 @@ class save_files(object):
 
         for j in range(len(self.list)):
 
-            f = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + self.filename + "_" + str(j) + '.trx', 'wb')
+            f = open('./cache/' + time + "_" + self.filename + "_" + str(j) + '.trx', 'wb')
             f.write("TRACK_TIME 1121238067\n\n")
 
-            fm = open('/mnt/data/WeatherCNN/sherlock/cache/' + time + "_" + self.filename + "_" + str(j) + '_mfl.trx', 'wb')
+            fm = open('./cache/' + time + "_" + self.filename + "_" + str(j) + '_mfl.trx', 'wb')
 
             for i in range(len(self.list[j])):
                 f.write("TRACK A" + str(i) + " ALOR1 370500N 1030900W 470 360 0 ZAB ZAB71\n")
@@ -110,7 +110,7 @@ class save_files(object):
     def save_csv(self):
 
         my_df = pd.DataFrame(self.list)
-        my_df.to_csv("/mnt/data/WeatherCNN/sherlock/traj_csv/" + time + "_" + self.filename + '.csv', index=False,
+        my_df.to_csv("./traj_csv/" + time + "_" + self.filename + '.csv', index=False,
                      header=False)
 
 

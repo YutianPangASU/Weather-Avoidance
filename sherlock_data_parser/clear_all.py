@@ -1,6 +1,6 @@
 import os, shutil
 
-folder = '/mnt/data/WeatherCNN/sherlock/flight_plan_plot'
+folder = './flight_plan_plot'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:
@@ -10,7 +10,7 @@ for the_file in os.listdir(folder):
     except Exception as e:
         print(e)
 
-folder = '/mnt/data/WeatherCNN/sherlock/flight_plan_coords'
+folder = './flight_plan_coords'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:
@@ -20,7 +20,7 @@ for the_file in os.listdir(folder):
     except Exception as e:
         print(e)
 
-folder = '/mnt/data/WeatherCNN/sherlock/traj_csv'
+folder = './traj_csv'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:
@@ -30,7 +30,7 @@ for the_file in os.listdir(folder):
     except Exception as e:
         print(e)
 
-folder = '/mnt/data/WeatherCNN/sherlock/traj_plot'
+folder = './traj_plot'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:
@@ -40,7 +40,7 @@ for the_file in os.listdir(folder):
     except Exception as e:
         print(e)
 
-folder = '/mnt/data/WeatherCNN/sherlock/cache'
+folder = './cache'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:
@@ -50,7 +50,7 @@ for the_file in os.listdir(folder):
     except Exception as e:
         print(e)
 
-folder = '/mnt/data/WeatherCNN/sherlock/EchoTopPic'
+folder = './EchoTopPic'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:
@@ -60,7 +60,7 @@ for the_file in os.listdir(folder):
     except Exception as e:
         print(e)
 
-folder = '/mnt/data/WeatherCNN/sherlock/x_train'
+folder = './x_train'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:
@@ -70,7 +70,7 @@ for the_file in os.listdir(folder):
     except Exception as e:
         print(e)
 
-folder = '/mnt/data/WeatherCNN/sherlock/x_train_npy'
+folder = './x_train_npy'
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     try:
@@ -94,8 +94,8 @@ else:
   print("The file start_and_end.csv does not exist")
 
 
-# remove call_sign.csv
-# if os.path.exists("call_sign.csv"):
-#     os.remove("call_sign.txt")
-# else:
-#     print("The file does not exist")
+# remove call_sign_small.csv
+if os.path.exists("call_sign_small.csv"):
+  os.remove("call_sign_small.csv")
+else:
+  print("The file call_sign_small.csv does not exist")
