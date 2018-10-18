@@ -4,7 +4,7 @@ Here listed a few plot of the x train and y train together.<br/>
 
 <img src="AAL1183 20170406 032806 0.png" alt="hi" class="inline"/>
 <img src="AAL1313 20170406 033223 0.png" alt="hi" class="inline"/>
-<img src="AL1359 20170406 024414 0.png" alt="hi" class="inline"/>
+<img src="AAL1359 20170406 024414 0.png" alt="hi" class="inline"/>
 <img src="AAL1362 20170405 234627 0.png" alt="hi" class="inline"/>
 
 
