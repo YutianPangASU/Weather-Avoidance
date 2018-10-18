@@ -24,25 +24,23 @@ class FAA_ENGINE(object):
 
         self.datetime = unixtime_to_datetime(self.flight_plan_sequence_change_time)  # transfer unix time to utc
 
-        save_csv(self.traj, self.call_sign, self.time)  # save real trajectory in a csv file
-
-        save_trx(self.flight_plan_change_sequence, self.call_sign, self.time)  # save trx files
-
-    def weather_contour(self):
-
-        func = load_ET(self.time)
-        func.load_labels()
-        # fun.save_pics()
-        for i in range(len(self.flight_plan_sequence_change_time)):
-            func.plot_weather_contour(self.flight_plan_sequence_change_time[i], self.call_sign)
-        plt.hold(False)
+        if self.flight_plan_change_sequence.size != 0:
+            save_trx(self.flight_plan_change_sequence, self.call_sign, self.time)  # save trx files
+            save_csv(self.traj, self.call_sign, self.time)  # save real trajectory in a csv file
+        else:
+            print "No flight plan information for flight call sign " + str(self.call_sign)
+            return
 
     def run_NATS(self, draw_traj = False):
+
+        if os.path.exists('/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" + self.call_sign + ".trx") is False:
+            return
 
         # load trx files
         aircraftInterface.load_aircraft('/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" + self.call_sign +
                                         ".trx", '/mnt/data/WeatherCNN/sherlock/cache/' + self.time + "_" +
                                         self.call_sign + "_mfl.trx")
+
         # default command
         aclist = aircraftInterface.getAllAircraftId()
         if aclist is None:
@@ -78,6 +76,9 @@ class FAA_ENGINE(object):
         # plt.show()
 
     def fetch_data(self, count):
+
+        if os.path.exists("flight_plan_coords/" + self.call_sign + '_' + str(0) + '.csv') is False:
+            return
 
         waypoints = np.genfromtxt("flight_plan_coords/" + self.call_sign + '_' + str(0) + '.csv', delimiter=",")
 
@@ -129,7 +130,7 @@ class FAA_ENGINE(object):
             lon_end_idx_ori = find_nearest_index(self.lon, end_pt[0])
             lat_start_idx_ori = find_nearest_index(self.lat, start_pt[1])
             lat_end_idx_ori = find_nearest_index(self.lat, end_pt[1])
-            #
+
             # lon_start_idx, lon_end_idx = sorted([lon_start_idx, lon_end_idx])
             # lat_start_idx, lat_end_idx = sorted([lat_start_idx, lat_end_idx])
             #
@@ -164,7 +165,6 @@ class FAA_ENGINE(object):
                 filewriter = csv.writer(file2, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 filewriter.writerow(np.asarray([lon_start_new, lat_start_new, lon_end_new, lat_end_new,
                                                 lon_start_idx_ori, lat_start_idx_ori, lon_end_idx_ori, lat_end_idx_ori]))
-
 
             # if lon_start_idx == lon_end_idx:
             #     lon_end_idx = lon_end_idx + 1
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     with open('call_sign_small.csv') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
-            try:  # in case there is no flight plan information for a given call sign
+            #try:  # in case there is no flight plan information for a given call sign
                 count = count + 1
 
                 print("Start reading flight number " + str(count))
@@ -239,6 +239,6 @@ if __name__ == '__main__':
                 # delete objects and load a fresh FAA_ENGINE
                 del fun
 
-            except:
-                pass
+            #except:
+                #pass
 

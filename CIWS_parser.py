@@ -121,7 +121,7 @@ class load_ET(object):
                             4000, 4230, 4500, 4730,
                             5000, 5230, 5500, 5730])
 
-        nearest_value = int(find_nearest_value(array, np.asarray([int(eliminate_zeros(pin[-4:]))])))  # find the closest time for downloading data from CIWS
+        nearest_value = int(find_nearest_value(array, np.asarray([int(eliminate_zeros(pin[-4:]))]))[0])  # find the closest time for downloading data from CIWS
         nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
 
         # find compared nc file
