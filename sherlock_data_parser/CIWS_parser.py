@@ -5,7 +5,6 @@ import pyproj
 from utils import *
 import cv2 as cv
 
-
 class load_ET(object):
 
     def __init__(self, date):
@@ -56,13 +55,11 @@ class load_ET(object):
         for i in range(len(self.x)):
             for j in range(len(self.y)):
                 self.lon[i], self.lat[j] = p(self.x[i], self.y[j], inverse=True)
-                #lon[i], lat[j] = pyproj.transform(p1, p2, x[i], y[j])
 
         # save lon and lat
         np.save('lon.npy', self.lon)
         np.save('lat.npy', self.lat)
-        # io.savemat('longitude.mat', {'longitude': np.asarray(self.lon)})
-        # io.savemat('latitude.mat', {'latitude': np.asarray(self.lat)})
+
 
     def load_labels(self):
 
@@ -114,7 +111,7 @@ class load_ET(object):
 
         # plt.show()
 
-    def crop_weather_contour(self, num, unix_time, call_sign, lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx, y_train, hold=False):
+    def crop_weather_contour(self, num, unix_time, call_sign, lat_start_idx, lat_end_idx, lon_start_idx, lon_end_idx, y_train, lon_start_idx_ori, lon_end_idx_ori, lat_start_idx_ori, lat_end_idx_ori, hold=False):
 
         pin = datetime.datetime.utcfromtimestamp(int(float(unix_time))).strftime('%Y%m%d %H%M%S')  # time handle to check CIWS database
         array = np.asarray([0, 230, 500, 730,
@@ -124,12 +121,15 @@ class load_ET(object):
                             4000, 4230, 4500, 4730,
                             5000, 5230, 5500, 5730])
 
-        nearest_value = int(find_nearest_value(array, np.asarray([int(eliminate_zeros(pin[-4:]))])))  # find the closest time for downloading data from CIWS
+        nearest_value = int(find_nearest_value(array, np.asarray([int(eliminate_zeros(pin[-4:]))]))[0])  # find the closest time for downloading data from CIWS
         nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
 
         # find compared nc file
         data = Dataset("data/" + pin[:8] + "EchoTop/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc")
         values = np.squeeze(data.variables['ECHO_TOP'])[lat_start_idx:lat_end_idx, lon_start_idx:lon_end_idx]
+
+        # delete negative values
+        values[values < 0] = 0
 
         # resize the matrix to 100 by 100 using opencv function
         resized_values = cv.resize(values, (100, 100))
@@ -150,6 +150,10 @@ class load_ET(object):
 
         if hold is True:
             plt.hold(True)
+            xx = np.asarray([self.lon[lon_start_idx_ori], y_train[0], y_train[2], y_train[4], self.lon[lon_end_idx_ori]])
+            yy = np.asarray([self.lat[lat_start_idx_ori], y_train[1], y_train[3], y_train[5], self.lat[lat_end_idx_ori]])
+            plt.plot(xx, yy, "--ko", linewidth=2)
+            plt.plot([xx[0], xx[-1]], [yy[0], yy[-1]], "-k*")
             plt.plot(y_train[0], y_train[1], 'r*', y_train[2], y_train[3], 'g*', y_train[4], y_train[5], 'b*')
         #plt.show()
 

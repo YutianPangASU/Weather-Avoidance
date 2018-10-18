@@ -87,6 +87,13 @@ else:
   print("The file y_train.csv does not exist")
 
 
+# remove start_and_end.csv
+if os.path.exists("start_and_end.csv"):
+  os.remove("start_and_end.csv")
+else:
+  print("The file start_and_end.csv does not exist")
+
+
 # remove call_sign.csv
 # if os.path.exists("call_sign.csv"):
 #     os.remove("call_sign.txt")

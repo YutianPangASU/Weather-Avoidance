@@ -230,13 +230,57 @@ def start_NATS():   # start NATS server
     os.chdir(cwd)
 
 
-def max_radius(list, start, end):
+def max_radius(lon, lat, list, start, end):
     # list is an 1 by 6 array which is the coords of three waypoints
     # start is the start point; end is the end point
+
+    # lon_start_idx = find_nearest_index(lon, start[0])
+    # lon_end_idx = find_nearest_index(lon, end[0])
+    # lat_start_idx = find_nearest_index(lat, start[1])
+    # lat_end_idx = find_nearest_index(lat, end[1])
 
     a = list[0:2]
     b = list[2:4]
     c = list[4:6]
+
+    # a_lon = find_nearest_index(lon, list[0])
+    # a_lat = find_nearest_index(lon, list[1])
+    # b_lon = find_nearest_index(lon, list[2])
+    # b_lat = find_nearest_index(lon, list[3])
+    # c_lon = find_nearest_index(lon, list[4])
+    # c_lat = find_nearest_index(lon, list[5])
+    #
+    # mid_lon = int(0.5 * (lon_end_idx + lon_start_idx))
+    # mid_lat = int(0.5 * (lat_end_idx + lat_start_idx))
+
+    # r1 = math.sqrt((mid_lat - lat_start_idx)**2 + (mid_lon - lon_start_idx)**2)
+    # r2 = math.sqrt((mid_lat - a_lat) ** 2 + (mid_lon - a_lon) ** 2)
+    # r3 = math.sqrt((mid_lat - b_lat) ** 2 + (mid_lon - b_lon) ** 2)
+    # r4 = math.sqrt((mid_lat - c_lat) ** 2 + (mid_lon - c_lon) ** 2)
+    # r = int(1.5 * max([r1, r2, r3, r4]))
+
+    # r = max(abs(mid_lat - lat_start_idx), abs(mid_lon - lon_start_idx), abs(mid_lat - a_lat), abs(mid_lon - a_lon),
+    #         abs(mid_lat - b_lat), abs(mid_lon - b_lon), abs(mid_lat - c_lat), abs(mid_lon - c_lon), )
+    # r = int(r)
+    #
+    # lon_start_new = mid_lon - r
+    # lat_start_new = mid_lat - r
+    # lon_end_new = mid_lon + r
+    # lat_end_new = mid_lat + r
+
+    # if lon_start_new or lat_start_new < 0:
+    #     r = min(lon_start_new, lat_start_new) + lon_start_new
+    #
+    # if lon_end_new > 5119:
+    #     r = 5119 - mid_lon
+    # if lat_end_new > 3519:
+    #     r = 3519 - mid_lat
+    #
+    # lon_start_new = mid_lon - r
+    # lat_start_new = mid_lat - r
+    # lon_end_new = mid_lon + r
+    # lat_end_new = mid_lat + r
+
     mid = 0.5 * (start + end)  # mid used as the centre of the circle area
 
     r1 = math.sqrt((mid[0] - start[0]) ** 2 + (mid[1] - start[1]) ** 2)
