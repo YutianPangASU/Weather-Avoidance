@@ -1,0 +1,2 @@
+To run the main.py file, user need to run NATS server first. Then specify the date of the data to fetch from 
+and change the NATS CLient directory in the main function. 
