@@ -1,7 +1,9 @@
 # WeatherCNN
 The data generating process has finished as of Oct 17, 2018.<br/>
 Here listed a few plot of the x train and y train together.<br/>
-![c1](AAL1183 20170406 032806 0.png)
+
+<img src="AAL1183 20170406 032806 0.png" alt="hi" class="inline"/>
+
 ![c2](AAL1313 20170406 033223 0.png)
 ![c3](AL1359 20170406 024414 0.png)
 ![c4](AAL1362 20170405 234627 0.png)
