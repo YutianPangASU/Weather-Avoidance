@@ -31,7 +31,7 @@ class FAA_ENGINE(object):
             print "No flight plan information for flight call sign " + str(self.call_sign)
             return
 
-    def run_NATS(self, draw_traj = False):
+    def run_NATS(self, draw_traj=False):
 
         if os.path.exists(os.getcwd() + '/cache/' + self.time + "_" + self.call_sign + ".trx") is False:
             return
@@ -161,7 +161,8 @@ class FAA_ENGINE(object):
             with open('start_and_end.csv', 'a') as file2:
                 filewriter = csv.writer(file2, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 filewriter.writerow(np.asarray([lon_start_new, lat_start_new, lon_end_new, lat_end_new,
-                                                lon_start_idx_ori, lat_start_idx_ori, lon_end_idx_ori, lat_end_idx_ori]))
+                                                lon_start_idx_ori, lat_start_idx_ori, lon_end_idx_ori, lat_end_idx_ori, 
+                                                lon_start_idx, lat_start_idx, lon_end_idx, lat_end_idx]))
 
             # if lon_start_idx == lon_end_idx:
             #     lon_end_idx = lon_end_idx + 1
@@ -225,7 +226,7 @@ if __name__ == '__main__':
 
                 # run the FAA ENGINE to fetch data
                 fun = FAA_ENGINE(row[0], date)
-                #fun = FAA_ENGINE("LBQ873", date)
+                # fun = FAA_ENGINE("AAL1522", date)
                 fun.run_parser_and_save_files()
                 # fun.weather_contour()
                 fun.run_NATS(draw_traj=True)
@@ -239,3 +240,4 @@ if __name__ == '__main__':
             #except:
                 #pass
 
+    shutdownJVM()

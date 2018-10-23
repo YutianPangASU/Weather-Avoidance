@@ -135,7 +135,7 @@ class load_ET(object):
         resized_values = cv.resize(values, (100, 100))
 
         # normalize the data
-        scaled_values = scale_linear_bycolumn(resized_values, high=1.0, low=0.0)
+        # scaled_values = scale_linear_bycolumn(resized_values, high=1.0, low=0.0)
 
         # load self.lon and self.lat
         self.lon = np.load('lon.npy')
@@ -146,7 +146,9 @@ class load_ET(object):
         lat_new = np.linspace(self.lat[lat_start_idx], self.lat[lat_end_idx], num=100)
 
         # plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], resized_values)
-        plt.contourf(lon_new, lat_new, scaled_values)
+        plt.contourf(lon_new, lat_new, resized_values)
+
+        #plt.contourf(lon_new, lat_new, scaled_values)
 
         if hold is True:
             plt.hold(True)
