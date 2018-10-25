@@ -58,15 +58,14 @@ class FAA_ENGINE(object):
             plt.plot(lon, lat)
             plt.hold(True)
 
-        plt.legend(self.datetime)
+            plt.legend(self.datetime[i])
+
         plt.savefig('flight_plan_plot/flight_plan_' + self.call_sign + '_' + self.time)
 
         # draw real trajectory along with flight plans
         if draw_traj is True:
-            traj = np.genfromtxt('traj_csv/' + self.time + '_' + self.call_sign + '.csv',
-                                 delimiter=",")  # load csv file
+            traj = np.genfromtxt('traj_csv/' + self.time + '_' + self.call_sign + '.csv', delimiter=",")  # load csv file
             plt.plot(traj[:, 1], traj[:, 2], 'k--')
-            # plt.legend(["real trajectory"])
             plt.savefig('traj_plot/traj_' + self.call_sign + '_' + self.time)
 
         plt.hold(False)
@@ -226,7 +225,7 @@ if __name__ == '__main__':
 
                 # run the FAA ENGINE to fetch data
                 fun = FAA_ENGINE(row[0], date)
-                # fun = FAA_ENGINE("AAL1522", date)
+                # fun = FAA_ENGINE("CGDFH", date)
                 fun.run_parser_and_save_files()
                 # fun.weather_contour()
                 fun.run_NATS(draw_traj=True)

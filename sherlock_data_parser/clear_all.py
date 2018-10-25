@@ -95,7 +95,7 @@ else:
 
 
 # remove call_sign_small.csv
-if os.path.exists("call_sign_small.csv"):
-  os.remove("call_sign_small.csv")
-else:
-  print("The file call_sign_small.csv does not exist")
+#if os.path.exists("call_sign_small.csv"):
+#  os.remove("call_sign_small.csv")
+#else:
+#  print("The file call_sign_small.csv does not exist")
