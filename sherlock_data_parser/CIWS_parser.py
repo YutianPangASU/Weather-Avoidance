@@ -164,7 +164,8 @@ class load_ET(object):
         plt.hold(False)
 
         # return the x_train matrix
-        return scaled_values
+        return resized_values
+        #return scaled_values
 
     def crop_weather_contour_ET(self, num, unix_time, call_sign, lat_start_idx, lat_end_idx, lon_start_idx,
                                  lon_end_idx, y_train, lon_start_idx_ori, lon_end_idx_ori, lat_start_idx_ori,
@@ -196,7 +197,7 @@ class load_ET(object):
         resized_values = cv.resize(values, (100, 100))
 
         # normalize the data
-        scaled_values = scale_linear_bycolumn(resized_values, high=1.0, low=0.0)
+        # scaled_values = scale_linear_bycolumn(resized_values, high=1.0, low=0.0)
 
         # load self.lon and self.lat
         self.lon = np.load('lon.npy')
@@ -207,7 +208,8 @@ class load_ET(object):
         lat_new = np.linspace(self.lat[lat_start_idx], self.lat[lat_end_idx], num=100)
 
         # plt.contourf(self.lon[lon_start_idx:lon_end_idx], self.lat[lat_start_idx:lat_end_idx], resized_values)
-        plt.contourf(lon_new, lat_new, scaled_values)
+        #plt.contourf(lon_new, lat_new, scaled_values)
+        plt.contourf(lon_new, lat_new, resized_values)
 
         if hold is True:
             plt.hold(True)
@@ -225,7 +227,8 @@ class load_ET(object):
         plt.hold(False)
 
         # return the x_train matrix
-        return scaled_values
+        return resized_values
+        #return scaled_values
 
 
 if __name__ == '__main__':
