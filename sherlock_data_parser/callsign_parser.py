@@ -26,12 +26,14 @@ class call_sign_parser(object):
 
 if __name__ == '__main__':
 
-    time = 20170406
+    #time = 20170407
     start_row_num = 0
     end_row_num = 5000000
+    time = raw_input("Please input the date to fetch data: ")
+    print "Reading call_sign_small_" + str(time) + ".csv"
 
     fun = call_sign_parser(time, start_row_num, end_row_num)
     #fun.count_rows()
     call_sign = fun.parser()
-    with open('call_sign_small.csv', 'w') as file:
+    with open('call_sign_small_' + str(time) + '.csv', 'w') as file:
         file.write("\n".join(call_sign))

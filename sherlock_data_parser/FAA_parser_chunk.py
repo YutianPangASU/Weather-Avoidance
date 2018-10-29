@@ -116,10 +116,19 @@ class save_files(object):
 
 if __name__ == '__main__':
 
-    call_sign = 'AAL717'
-    time = '20170406'
+    # call_sign = 'AAL717'
+    # time = '20170406'
+
+    call_sign = raw_input("Please input the flight call sign: ")
+    call_sign = str(call_sign)
+    print "The flight call sign is " + call_sign
+
+    time = raw_input("Please input the date for data file: ")
+    time = str(time)
+    print "Reading FAA_USA_" + time + ".csv"
 
     chunk_size = 1e6
+    print "Chunk size is " + str(int(chunk_size))
 
     fun = FAA_Parser(call_sign, time, chunk_size)
     flight_plan_sequence_change_time, flight_plan_change_sequence, trajectory = fun.get_flight_plan()

@@ -180,7 +180,11 @@ class FAA_ENGINE(object):
 
 if __name__ == '__main__':
 
-    date = '20170406'
+    date = raw_input("Please input the date for data file: ")
+    date = str(time)
+    print "The date you just chose is " + time + 
+    print "Please make sure the file call_sign_small_" + date + ".csv and IFF_USA_" + date + "both exist."
+
 
     # flight call sign count index
     count = 0
@@ -215,7 +219,7 @@ if __name__ == '__main__':
     # ignore matplot warning
     np.warnings.filterwarnings('ignore')
 
-    with open('call_sign_small.csv') as csvfile:
+    with open('call_sign_small_' + date + '.csv') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
             #try:  # in case there is no flight plan information for a given call sign
@@ -225,7 +229,7 @@ if __name__ == '__main__':
 
                 # run the FAA ENGINE to fetch data
                 fun = FAA_ENGINE(row[0], date)
-                # fun = FAA_ENGINE("CGDFH", date)
+                #fun = FAA_ENGINE("UPS2860", date)
                 fun.run_parser_and_save_files()
                 # fun.weather_contour()
                 fun.run_NATS(draw_traj=True)

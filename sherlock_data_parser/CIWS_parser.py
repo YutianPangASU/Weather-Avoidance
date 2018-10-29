@@ -68,21 +68,24 @@ class load_ET(object):
 
     def save_pics(self):
 
-        handle = sorted(os.listdir("data/" + self.date + "EchoTop"))
+        handle = sorted(os.listdir("data/" + str(self.date) + "ET"))
 
         print ('There is ' + repr(len(handle)) + ' data files')
 
         for i in range(len(handle)):
         #for i in range(10):
-            data = Dataset("data/" + self.date + "EchoTop/" + handle[i])
+            data = Dataset("data/" + str(self.date) + "ET/" + handle[i])
             values = np.squeeze(data.variables['ECHO_TOP'])  # extract values
 
             # save EchoTop values and restore a 3d array
             #self.GY.append(values)
 
             plt.contourf(self.lon, self.lat, values)
+            plt.xlabel("Longitude")
+            plt.ylabel("Latitude")
+            plt.title(handle[i])
             # plt.axes([self.lon.min(), self.lon.max(), self.lat.min(), self.lat.max()])
-            # plt.show()
+            plt.show()
 
             plt.savefig('EchoTopPic/' + str('{date:%Y-%m-%d_%H:%M:%S}'.format(date=datetime.datetime.now())))
             print ('I\'m reading file ' + repr(i))
@@ -194,7 +197,7 @@ class load_ET(object):
         values[values < 0] = 0
 
         # resize the matrix to 100 by 100 using opencv function
-        resized_values = cv.resize(values, (100, 100))
+        resized_values = cv.resize(values.T, (100, 100))
 
         # normalize the data
         # scaled_values = scale_linear_bycolumn(resized_values, high=1.0, low=0.0)
@@ -243,7 +246,7 @@ if __name__ == '__main__':
     fun = load_ET(date)
     # fun.save_labels()  # only need to run this function once
     fun.load_labels()
-    # fun.save_pics()
+    fun.save_pics()
     fun.plot_weather_contour(unix_time, call_sign)
 
 
