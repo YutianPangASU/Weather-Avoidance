@@ -181,8 +181,8 @@ class FAA_ENGINE(object):
 if __name__ == '__main__':
 
     date = raw_input("Please input the date for data file: ")
-    date = str(time)
-    print "The date you just chose is " + time + 
+    date = str(date)
+    print "The date you just chose is " + date
     print "Please make sure the file call_sign_small_" + date + ".csv and IFF_USA_" + date + "both exist."
 
 
