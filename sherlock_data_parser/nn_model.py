@@ -68,5 +68,6 @@ def cnn_model_fn(features, labels, mode):
   return tf.estimator.EstimatorSpec(
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
+
 if __name__ == '__main__':
     cnn_model_fn()

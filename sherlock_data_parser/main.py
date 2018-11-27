@@ -101,6 +101,11 @@ class FAA_ENGINE(object):
 
             max_point = np.vstack([max_point, traj_max_point])
             max_distance = np.append(max_distance, traj_max_distance)
+	print max_distance
+
+        with open('statistics.csv', 'a') as f3:
+            writer = csv.writer(f3, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(max_distance)
 
         # get the idx of points maximum distance greater than the given threshold value
         # then range it to get the start waypoint and the end waypoint to get the weather plot
@@ -183,7 +188,7 @@ if __name__ == '__main__':
     date = raw_input("Please input the date for data file: ")
     date = str(date)
     print "The date you just chose is " + date
-    print "Please make sure the file call_sign_small_" + date + ".csv and IFF_USA_" + date + "both exist."
+    print "Please make sure the file call_sign_small_" + date + ".csv and IFF_USA_" + date + " both exist."
 
 
     # flight call sign count index
@@ -219,7 +224,7 @@ if __name__ == '__main__':
     # ignore matplot warning
     np.warnings.filterwarnings('ignore')
 
-    with open('call_sign_small_' + date + '.csv') as csvfile:
+    with open('call_sign_' + date + '.csv') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
             #try:  # in case there is no flight plan information for a given call sign
@@ -229,7 +234,7 @@ if __name__ == '__main__':
 
                 # run the FAA ENGINE to fetch data
                 fun = FAA_ENGINE(row[0], date)
-                #fun = FAA_ENGINE("UPS2860", date)
+                #fun = FAA_ENGINE("CGDHS", date)
                 fun.run_parser_and_save_files()
                 # fun.weather_contour()
                 fun.run_NATS(draw_traj=True)
