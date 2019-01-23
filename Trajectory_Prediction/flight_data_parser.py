@@ -1,3 +1,4 @@
+#! /usr/bin/python2 python2
 #-*- coding: utf-8 -*-
 
 """
@@ -37,6 +38,7 @@ class FAA_Departure_Arrival_Parser(object):
 
         # create empty data frame to store useful information
         finfo = pd.DataFrame()
+
         # create empty data frame for flight plans
         fp = pd.DataFrame()
 
