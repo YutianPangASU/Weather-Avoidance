@@ -1,3 +1,16 @@
+#! /anaconda/bin/python3 python
+# -*- coding: utf-8 -*-
+
+"""
+@Author: Yutian Pang
+@Date: 2019-01-23
+
+A list of useful python functions.
+
+@Last Modified by: Yutian Pang
+@Last Modified date: 2019-01-23
+"""
+
 import datetime
 import numpy as np
 

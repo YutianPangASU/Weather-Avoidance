@@ -12,7 +12,7 @@ The script will also create a folder to save the history track points of each fl
 To run the script, change "path_to_data" and paste "python2 flight_data_parser.py" in terminal.
 
 @Last Modified by: Yutian Pang
-@Last Modified date: 2019-01-16
+@Last Modified date: 2019-01-23
 """
 
 import pandas as pd
@@ -32,7 +32,7 @@ class FAA_Departure_Arrival_Parser(object):
 
         df = pd.read_csv('{}/IFF_USA_{}.csv'.format(cfg['path_to_data'], str(self.date)), chunksize=self.chunk_size,
                          iterator=True, names=range(0, 18), low_memory=False)
-        print "Data File Loaded."
+        print ("Data File Loaded.")
 
         i = 0
 
@@ -45,7 +45,7 @@ class FAA_Departure_Arrival_Parser(object):
         for chunk in df:
 
             i += 1
-            print "Reading chunk number {}".format(str(i))
+            print ("Reading chunk number {}".format(str(i)))
 
             # return the rows numbers that departure and return airport matches
             self.rows = []
@@ -53,7 +53,7 @@ class FAA_Departure_Arrival_Parser(object):
 
             num_of_flights = len(self.rows)
 
-            print "Found {} flight(s) within this chunk of data".format(num_of_flights)
+            print ("Found {} flight(s) within this chunk of data".format(num_of_flights))
 
             # store unix time, run way information, flight callsign and aircraft type
             finfo = chunk.loc[self.rows, [1, 4, 7, 9]]
@@ -86,8 +86,8 @@ class FAA_Departure_Arrival_Parser(object):
 
 if __name__ == '__main__':
 
-    cfg = {'departure_airport': 'JFK',
-           'arrival_airport': 'LAX',
+    cfg = {'departure_airport': 'SFO',
+           'arrival_airport': 'PHX',
            'chunk_size': 1e6,
            'file_date': 20170407,
            'path_to_data': '/mnt/data/sherlock/data'}

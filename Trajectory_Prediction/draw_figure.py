@@ -1,14 +1,17 @@
-#! /usr/bin/python2 python2
-#-*- coding: utf-8 -*-
+#! /anaconda/bin/python3 python
+# -*- coding: utf-8 -*-
 
 """
 @Author: Yutian Pang
-@Date: 2019-01-17
+@Date: 2019-01-23
 
-This Python script is used to draw the csv file into one plot given directories.
+This Python script is able to,
+1. Draw out the 2D history track points between two airports on top of a US map.
+2. Plot the weather conditions during the flight given a specific flight call sign.
+3. Make a gif using the plots generated from 2.
 
 @Last Modified by: Yutian Pang
-@Last Modified date: 2019-01-22
+@Last Modified date: 2019-01-23
 """
 
 import os
@@ -72,56 +75,75 @@ class draw_figure(object):
         flight_start_time = utl.unixtime_to_datetime([track[0, 0]])[0]
         print("Flight {} Departured at {}".format(self.call_sign_to_draw, flight_start_time))
 
+        flight_time = track[-1, 0] - track[0, 0]
+        print("The total flight time is {} seconds/{} hours".format(int(flight_time), round(flight_time/3600),2))
+
         flight_end_time = utl.unixtime_to_datetime([track[-1, 0]])[0]
         print("Flight {} Arrived    at {}".format(self.call_sign_to_draw, flight_end_time))
 
-        pin, nearest_value = utl.get_weather_file(track[0, 0])
-        print(pin, nearest_value)
-        pin, nearest_value = utl.get_weather_file(track[-1, 0])
-        print(pin, nearest_value)
+        unix_time_seq = np.arange(track[0, 0], track[-1, 0], 150)
 
-        # load weather file
-        filename = "ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z"
+        for i in range(len(unix_time_seq)):
+            print("Generating plot {}".format(i))
+            pin, nearest_value = utl.get_weather_file(unix_time_seq[i])
 
-        nc = NetCDFFile('{}/{}.nc'.format(self.weather_dir, filename))
-        data = nc.variables['ECHO_TOP'][:]
-        loncorners = nc.variables['x0'][:]
-        latcorners = nc.variables['y0'][:]
+            # load weather file
+            filename = "ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z"
 
-        # create new figure, axes instances.
-        fig = plt.figure()
-        plt.title('EchoTop')
+            nc = NetCDFFile('{}/{}.nc'.format(self.weather_dir, filename))
+            data = nc.variables['ECHO_TOP'][:]
+            loncorners = nc.variables['x0'][:]
+            latcorners = nc.variables['y0'][:]
 
-        # setup mercator map projection
-        m = Basemap(width=2559500*2, height=1759500*2, resolution='l', projection='laea', lat_ts=50, lat_0=38, lon_0=-98)
+            # create new figure, axes instances.
+            fig = plt.figure()
+            plt.title('{}'.format(filename))
 
-        m.drawcoastlines()
-        m.drawstates(linewidth=.25)
-        m.drawcountries(linewidth=1)
-        # m.fillcontinents()
+            # setup mercator map projection
+            m = Basemap(width=2559500*2, height=1759500*2, resolution='l', projection='laea', lat_ts=50, lat_0=38, lon_0=-98)
 
-        # draw parallels
-        m.drawparallels(np.arange(0, 90, 15), labels=[1, 1, 0, 1])
-        # draw meridians
-        m.drawmeridians(np.arange(-180, 180, 30), labels=[1, 1, 0, 1])
+            m.drawcoastlines()
+            m.drawstates(linewidth=.25)
+            m.drawcountries(linewidth=1)
+            # m.fillcontinents()
 
-        ny = data.shape[2]
-        nx = data.shape[3]
-        lons, lats = m.makegrid(nx, ny)  # get lat/lons of ny by nx evenly space grid
-        x, y = m(lons, lats)  # compute map proj coordinates
+            # draw parallels
+            m.drawparallels(np.arange(0, 90, 15), labels=[1, 1, 0, 1])
+            # draw meridians
+            m.drawmeridians(np.arange(-180, 180, 30), labels=[1, 1, 0, 1])
 
-        data = data[0, 0, :, :].clip(min=0)
+            ny = data.shape[2]
+            nx = data.shape[3]
+            lons, lats = m.makegrid(nx, ny)  # get lat/lons of ny by nx evenly space grid
+            x, y = m(lons, lats)  # compute map proj coordinates
 
-        # draw filled contours
-        #clevs = np.linspace(0, 60000, 13)
-        #cs = m.contourf(x, y, data)
-        cs = m.contour(x, y, data)
+            data = data[0, 0, :, :].clip(min=0)
 
-        # add color bar
-        cbar = m.colorbar(cs, location='bottom', pad="5%")
-        cbar.set_label('ET Unit')
+            # draw filled contours
+            #clevs = np.linspace(0, 60000, 13)
+            #cs = m.contourf(x, y, data)
+            cs = m.contour(x, y, data)
 
-        plt.savefig('Plots/{}.png'.format(self.obj_dir))
+            # Plot track points
+            lon, lat = m(track[:, 2], track[:, 1])
+            m.plot(lon, lat, marker=None, color='r')
+
+            # add color bar
+            cbar = m.colorbar(cs, location='bottom', pad="5%")
+            cbar.set_label('ET Unit')
+
+            plt.savefig('Plots/{}_{}.png'.format(self.call_sign_to_draw, str(pin[-6:-4]) + nearest_value))
+            plt.close(fig)
+
+    def make_gif(self):
+        # make a gif
+        import imageio
+        filenames = sorted([x.split('.')[0] for x in os.listdir("Plots/")])
+        with imageio.get_writer('{}.gif'.format(self.call_sign_to_draw), mode='I') as writer:
+            for filename in filenames:
+                image = imageio.imread("Plots/"+filename+".png")
+                writer.append_data(image)
+                print("Appending Frame {}".format(filename))
 
 
 if __name__ == '__main__':
@@ -133,4 +155,5 @@ if __name__ == '__main__':
 
     fun = draw_figure(cfg)
     # fun.plot2D()
-    fun.draw_weather_contour()
+    # fun.draw_weather_contour()
+    fun.make_gif()
