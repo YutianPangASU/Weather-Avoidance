@@ -69,3 +69,66 @@ def get_weather_file(unix_time):
     nearest_value = int(find_nearest_value(array, np.asarray([int(eliminate_zeros(pin[-4:]))])))
     nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
     return pin, nearest_value
+
+
+def flight_plan_parser(str):  # use local waypoint database
+
+    str = str[:-5] # remove last 5 characters
+    str_list = str.split('.') # break the string
+    str_list = list(filter(None, str_list)) # remove empty strings
+    print (str_list)
+
+    # store coordinates
+    coords = []
+
+    import csv
+    for i in range(len(str_list)):
+        with open('myFPDB.csv', 'rt') as f:
+            reader = csv.reader(f, delimiter=',')
+            for row in reader:
+                if row[0] == str_list[i]:
+                    coords += [[row[1], row[2]]]
+    return coords
+
+
+def fetch_from_web(str):  # use online waypoint database source
+
+    str = str[:-5] # remove last 5 characters
+    str_list = str.split('.') # break the string
+    str_list = list(filter(None, str_list)) # remove empty strings
+    print (str_list)
+
+    # store coordinates
+    coords = []
+
+    import urllib.request
+    # query departure airports
+    websource = urllib.request.urlopen("https://opennav.com/airport/{}".format(str_list[0]))
+    l = websource.readlines()[13].decode("utf-8")
+    lon, lat = l[l.find("(") + 1:l.rfind(")")].split(',')
+    coords += [[lon, lat]]
+
+    # query waypoints
+    for n in range(1, len(str_list)-1):
+        websource = urllib.request.urlopen("https://opennav.com/waypoint/US/{}".format(str_list[n]))
+        l = websource.readlines()[13].decode("utf-8")
+        try:
+            lon, lat = l[l.find("(") + 1:l.rfind(")")].split(',')
+            coords += [[lon, lat]]
+        except:
+            print("Waypoint {} not found.".format(str_list[n]))
+            pass
+
+    # query arrival airports
+    websource = urllib.request.urlopen("https://opennav.com/airport/{}".format(str_list[-1]))
+    l = websource.readlines()[13].decode("utf-8")
+    lon, lat = l[l.find("(") + 1:l.rfind(")")].split(',')
+    coords += [[lon, lat]]
+
+    return np.asarray(coords).astype(float)  # return flight plan as array
+
+
+if __name__ == '__main__':
+    fp = 'KJFK..COATE.Q436.RAAKK.Q438.RUBYY..DABJU..KG78M..DBQ.J100.JORDY..KP72G..OBH.J10.LBF..LEWOY..KD60U..JNC..HVE..PROMT.Q88.HAKMN.ANJLL1.KLAX/0539'
+    #flight_plan_parser(fp)
+    wps = fetch_from_web(fp)
