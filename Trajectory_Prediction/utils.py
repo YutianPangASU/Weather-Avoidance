@@ -3,12 +3,12 @@
 
 """
 @Author: Yutian Pang
-@Date: 2019-01-23
+@Date: 2019-01-29
 
 A list of useful python functions.
 
 @Last Modified by: Yutian Pang
-@Last Modified date: 2019-01-23
+@Last Modified date: 2019-01-29
 """
 
 import datetime
@@ -96,7 +96,7 @@ def fetch_from_web(str):  # use online waypoint database source
     str = str[:-5] # remove last 5 characters
     str_list = str.split('.') # break the string
     str_list = list(filter(None, str_list)) # remove empty strings
-    print (str_list)
+    print ("FP:{}".format(str_list))
 
     # store coordinates
     coords = []
@@ -110,14 +110,20 @@ def fetch_from_web(str):  # use online waypoint database source
 
     # query waypoints
     for n in range(1, len(str_list)-1):
-        websource = urllib.request.urlopen("https://opennav.com/waypoint/US/{}".format(str_list[n]))
-        l = websource.readlines()[13].decode("utf-8")
         try:
+            websource = urllib.request.urlopen("https://opennav.com/waypoint/US/{}".format(str_list[n]))
+            l = websource.readlines()[13].decode("utf-8")
             lon, lat = l[l.find("(") + 1:l.rfind(")")].split(',')
             coords += [[lon, lat]]
         except:
-            print("Waypoint {} not found.".format(str_list[n]))
-            pass
+            try:
+                websource = urllib.request.urlopen("https://opennav.com/navaid/US/{}".format(str_list[n]))
+                l = websource.readlines()[13].decode("utf-8")
+                lon, lat = l[l.find("(") + 1:l.rfind(")")].split(',')
+                coords += [[lon, lat]]
+            except:
+                print("Waypoint {} not found from {}.".format(str_list[n], "https://opennav.com"))
+                pass
 
     # query arrival airports
     websource = urllib.request.urlopen("https://opennav.com/airport/{}".format(str_list[-1]))
@@ -125,10 +131,39 @@ def fetch_from_web(str):  # use online waypoint database source
     lon, lat = l[l.find("(") + 1:l.rfind(")")].split(',')
     coords += [[lon, lat]]
 
-    return np.asarray(coords).astype(float)  # return flight plan as array
+    return np.asarray(coords).astype(float)  # return flight plan as np.array
+
+
+def download_from_web(date):
+    url = 'https://nomads.ncdc.noaa.gov/data/namanl/{}/{}/namanl_218_{}_0000_001.grb'.format(date[:6], date, date)
+
+    import urllib.request
+    file_name = url.split('/')[-1]
+    u = urllib.request.urlopen(url)
+    f = open("NOAA/{}".format(file_name), 'wb')
+    meta = u.info()
+    file_size = int(meta.get_all("Content-Length")[0])
+    print("Downloading: %s Bytes: %s" % (file_name, file_size))
+
+    file_size_dl = 0
+    block_sz = 8192
+    while True:
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
+
+        file_size_dl += len(buffer)
+        f.write(buffer)
+
+    f.close()
+    print("Done")
 
 
 if __name__ == '__main__':
+
     fp = 'KJFK..COATE.Q436.RAAKK.Q438.RUBYY..DABJU..KG78M..DBQ.J100.JORDY..KP72G..OBH.J10.LBF..LEWOY..KD60U..JNC..HVE..PROMT.Q88.HAKMN.ANJLL1.KLAX/0539'
+
     #flight_plan_parser(fp)
-    wps = fetch_from_web(fp)
+    #wps = fetch_from_web(fp)
+    date = '20170405'
+    download_from_web(date)
