@@ -11,13 +11,16 @@ This Python script is able to,
 3. Make a gif using the plots generated from 2.
 
 @Last Modified by: Yutian Pang
-@Last Modified date: 2019-01-23
+@Last Modified date: 2019-01-31
 """
 
 import os
+import csv
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import Basemap, cm
+import matplotlib.patches as mpatches
+os.environ['PROJ_LIB'] = '/home/ypang6/anaconda3/share/proj'
+from mpl_toolkits.basemap import Basemap
 from netCDF4 import Dataset as NetCDFFile
 import utils as utl
 
@@ -66,10 +69,21 @@ class draw_figure(object):
         #plt.show()
 
     def draw_weather_contour(self):
-
         # load track data
         track = np.genfromtxt('{}/{}_{}.csv'.format(self.obj_dir, self.call_sign_to_draw, self.date),
                               delimiter=',', skip_header=1)
+
+        # get flight plan str
+        csv_name = 'flight_data_{}_{}_to_{}.csv'.format(self.date, self.obj_dir[-7:-4], self.obj_dir[-3:])
+        with open(csv_name) as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if row[2] == self.call_sign_to_draw:
+                    fp_str = row[4]
+                    break
+
+        # parse fp_string into array
+        flight_plan = utl.fetch_from_web(fp_str)
 
         # get flight time info
         flight_start_time = utl.unixtime_to_datetime([track[0, 0]])[0]
@@ -83,8 +97,18 @@ class draw_figure(object):
 
         unix_time_seq = np.arange(track[0, 0], track[-1, 0], 150)
 
+        # clear folder before run functions
+        folder = './Plots'
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
         for i in range(len(unix_time_seq)):
-            print("Generating plot {}".format(i))
+            print("Generating plot {}/{}".format(i+1, len(unix_time_seq)))
             pin, nearest_value = utl.get_weather_file(unix_time_seq[i])
 
             # load weather file
@@ -120,24 +144,33 @@ class draw_figure(object):
             data = data[0, 0, :, :].clip(min=0)
 
             # draw filled contours
-            #clevs = np.linspace(0, 60000, 13)
-            #cs = m.contourf(x, y, data)
             cs = m.contour(x, y, data)
 
             # Plot track points
             lon, lat = m(track[:, 2], track[:, 1])
-            m.plot(lon, lat, marker=None, color='r')
+            plot_1 = m.plot(lon, lat, marker=None, color='r')
+
+            # plot flight plan
+            lon_fp, lat_fp = m(flight_plan[:, 1], flight_plan[:, 0])
+            plot_2 = m.plot(lon_fp, lat_fp, marker=None, color='b')
 
             # add color bar
             cbar = m.colorbar(cs, location='bottom', pad="5%")
             cbar.set_label('ET Unit')
 
+            # add legend
+            red_patch = mpatches.Patch(color='red', label='Track Points')
+            blue_patch = mpatches.Patch(color='blue', label='Flight Plan')
+            plt.legend(handles=[red_patch, blue_patch])
+
+            #plt.show()
             plt.savefig('Plots/{}_{}.png'.format(self.call_sign_to_draw, str(pin[-6:-4]) + nearest_value))
             plt.close(fig)
 
     def make_gif(self):
         # make a gif
         import imageio
+
         filenames = sorted([x.split('.')[0] for x in os.listdir("Plots/")])
         with imageio.get_writer('{}.gif'.format(self.call_sign_to_draw), mode='I') as writer:
             for filename in filenames:
@@ -148,12 +181,19 @@ class draw_figure(object):
 
 if __name__ == '__main__':
 
-    cfg = {'object_directory': 'track_point_JFK2LAX',
+    cfg = {'departure_airport': 'JFK',
+           'arrival_airport': 'LAX',
            'date': '20170407',
            'call_sign_to_draw': 'AAL185'}
-    cfg['weather_directory'] = '/mnt/data/sherlock/data/{}ET'.format(cfg['date'])
+
+    cfg['object_directory'] = "track_point_{}_{}2{}".format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'])
+    cfg['weather_directory'] = '/mnt/data/Research/data/{}ET'.format(cfg['date'])
 
     fun = draw_figure(cfg)
-    # fun.plot2D()
-    # fun.draw_weather_contour()
-    fun.make_gif()
+
+    #fun.plot2D()
+
+    fun.draw_weather_contour() # plots saved in '/Plots'
+
+    fun.make_gif() # make gif use the plots in '/Plots
+

@@ -86,11 +86,11 @@ class FAA_Departure_Arrival_Parser(object):
 
 if __name__ == '__main__':
 
-    cfg = {'departure_airport': 'SFO',
-           'arrival_airport': 'PHX',
+    cfg = {'departure_airport': 'JFK',
+           'arrival_airport': 'ORD',
            'chunk_size': 1e6,
-           'file_date': 20170407,
-           'path_to_data': '/mnt/data/sherlock/data'}
+           'file_date': 20170406,
+           'path_to_data': '/mnt/data/Research/data'}
 
     try:
         os.makedirs('track_point_{}_{}2{}'.format(cfg['file_date'], cfg['departure_airport'], cfg['arrival_airport']))
