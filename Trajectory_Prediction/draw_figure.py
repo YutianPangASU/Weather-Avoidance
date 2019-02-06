@@ -138,7 +138,13 @@ class draw_figure(object):
 
             ny = data.shape[2]
             nx = data.shape[3]
-            lons, lats = m.makegrid(nx, ny)  # get lat/lons of ny by nx evenly space grid
+            lons, lats = m.makegrid(nx, ny)
+
+            # import scipy.io
+            # scipy.io.savemat('lats.mat', mdict={'arr': lats})
+            # scipy.io.savemat('lons.mat', mdict={'arr': lons})
+
+            # get lat/lons of ny by nx evenly space grid
             x, y = m(lons, lats)  # compute map proj coordinates
 
             data = data[0, 0, :, :].clip(min=0)
@@ -184,16 +190,16 @@ if __name__ == '__main__':
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
            'date': '20170407',
-           'call_sign_to_draw': 'AAL185'}
+           'call_sign_to_draw': 'AAL293'}
 
     cfg['object_directory'] = "track_point_{}_{}2{}".format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'])
     cfg['weather_directory'] = '/mnt/data/Research/data/{}ET'.format(cfg['date'])
 
     fun = draw_figure(cfg)
 
-    #fun.plot2D()
+    fun.plot2D()
 
-    fun.draw_weather_contour() # plots saved in '/Plots'
+    #fun.draw_weather_contour() # plots saved in '/Plots'
 
-    fun.make_gif() # make gif use the plots in '/Plots
+    #fun.make_gif() # make gif use the plots in '/Plots
 

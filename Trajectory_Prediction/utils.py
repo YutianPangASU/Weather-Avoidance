@@ -135,6 +135,7 @@ def fetch_from_web(str):  # use online waypoint database source
 
 
 def download_from_web(date):
+
     url = 'https://nomads.ncdc.noaa.gov/data/namanl/{}/{}/namanl_218_{}_0000_001.grb'.format(date[:6], date, date)
 
     import urllib.request

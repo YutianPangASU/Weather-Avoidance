@@ -81,15 +81,15 @@ class FAA_Departure_Arrival_Parser(object):
                              self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
                              sep=',',
                              index=False,
-                             header=['UNIX TIME', 'LONGITUDE', 'LATITUDE', 'ALTITUDE'])
+                             header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
 
 
 if __name__ == '__main__':
 
     cfg = {'departure_airport': 'JFK',
-           'arrival_airport': 'ORD',
+           'arrival_airport': 'LAX',
            'chunk_size': 1e6,
-           'file_date': 20170406,
+           'file_date': 20170405,
            'path_to_data': '/mnt/data/Research/data'}
 
     try:
