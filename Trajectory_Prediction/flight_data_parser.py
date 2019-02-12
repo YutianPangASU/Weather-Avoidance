@@ -1,4 +1,4 @@
-#! /usr/bin/python2 python2
+#! /home/anaconda3 python
 #-*- coding: utf-8 -*-
 
 """
@@ -27,6 +27,7 @@ class FAA_Departure_Arrival_Parser(object):
         self.arrival = cfg['arrival_airport']
         self.chunk_size = cfg['chunk_size']
         self.date = cfg['file_date']
+        self.downsample_rate = cfg['downsample_rate']
 
     def get_flight_data(self):
 
@@ -83,17 +84,30 @@ class FAA_Departure_Arrival_Parser(object):
                              index=False,
                              header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
 
+                downsampled_track = track.iloc[::self.downsample_rate, :]
+                downsampled_track.to_csv('track_point_{}_{}2{}_downsampled/{}_{}.csv'.format(
+                             self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
+                             sep=',',
+                             index=False,
+                             header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
+
 
 if __name__ == '__main__':
 
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
            'chunk_size': 1e6,
-           'file_date': 20170405,
+           'file_date': 20170407,
+           'downsample_rate': 5,  # take one row out of five rows
            'path_to_data': '/mnt/data/Research/data'}
 
     try:
         os.makedirs('track_point_{}_{}2{}'.format(cfg['file_date'], cfg['departure_airport'], cfg['arrival_airport']))
+    except OSError:
+        pass
+
+    try:
+        os.makedirs('track_point_{}_{}2{}_downsampled'.format(cfg['file_date'], cfg['departure_airport'], cfg['arrival_airport']))
     except OSError:
         pass
 

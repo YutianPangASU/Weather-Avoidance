@@ -13,6 +13,7 @@ A list of useful python functions.
 
 import datetime
 import numpy as np
+from datetime import datetime
 
 
 def unixtime_to_datetime(unix_time):  # input can be an array
@@ -69,6 +70,24 @@ def get_weather_file(unix_time):
     nearest_value = int(find_nearest_value(array, np.asarray([int(eliminate_zeros(pin[-4:]))])))
     nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
     return pin, nearest_value
+
+
+def check_convective_weather_files(weather_path, unix_time):
+    pin = datetime.utcfromtimestamp(int(float(unix_time))).strftime('%Y%m%d %H%M%S')  # time handle to check CIWS database
+    array = np.asarray([0, 230, 500, 730,
+                        1000, 1230, 1500, 1730,
+                        2000, 2230, 2500, 2730,
+                        3000, 3230, 3500, 3730,
+                        4000, 4230, 4500, 4730,
+                        5000, 5230, 5500, 5730])
+
+    nearest_value = int(find_nearest_value(array, 0.001+np.asarray([int(eliminate_zeros(pin[-4:]))])))  # find the closest time for downloading data from CIWS
+    nearest_value = make_up_zeros(str(nearest_value))  # make up zeros for 0 230 500 730
+
+    filename = pin[:8] + "ET/ciws.EchoTop." + pin[:8] + "T" + str(pin[-6:-4]) + nearest_value + "Z.nc"
+
+    return weather_path + filename
+
 
 
 def flight_plan_parser(str):  # use local waypoint database
@@ -157,7 +176,9 @@ def download_from_web(date):
         f.write(buffer)
 
     f.close()
-    print("Done")
+    print("Finished downloading weather files.")
+
+
 
 
 if __name__ == '__main__':

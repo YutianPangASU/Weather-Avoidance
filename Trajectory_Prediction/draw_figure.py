@@ -143,6 +143,8 @@ class draw_figure(object):
             # import scipy.io
             # scipy.io.savemat('lats.mat', mdict={'arr': lats})
             # scipy.io.savemat('lons.mat', mdict={'arr': lons})
+            # np.save('lats.npy', lats)
+            # np.save('lons.npy', lons)
 
             # get lat/lons of ny by nx evenly space grid
             x, y = m(lons, lats)  # compute map proj coordinates
@@ -189,8 +191,8 @@ if __name__ == '__main__':
 
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
-           'date': '20170407',
-           'call_sign_to_draw': 'AAL293'}
+           'date': '20170405',
+           'call_sign_to_draw': 'AAL1'}
 
     cfg['object_directory'] = "track_point_{}_{}2{}".format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'])
     cfg['weather_directory'] = '/mnt/data/Research/data/{}ET'.format(cfg['date'])
@@ -199,7 +201,7 @@ if __name__ == '__main__':
 
     fun.plot2D()
 
-    #fun.draw_weather_contour() # plots saved in '/Plots'
+    fun.draw_weather_contour() # plots saved in '/Plots'
 
-    #fun.make_gif() # make gif use the plots in '/Plots
+    fun.make_gif() # make gif use the plots in '/Plots
 
