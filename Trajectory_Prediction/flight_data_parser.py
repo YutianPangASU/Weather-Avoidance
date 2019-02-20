@@ -12,7 +12,7 @@ The script will also create a folder to save the history track points of each fl
 To run the script, change "path_to_data" and paste "python2 flight_data_parser.py" in terminal.
 
 @Last Modified by: Yutian Pang
-@Last Modified date: 2019-01-23
+@Last Modified date: 2019-02-20
 """
 
 import pandas as pd
@@ -28,12 +28,33 @@ class FAA_Departure_Arrival_Parser(object):
         self.chunk_size = cfg['chunk_size']
         self.date = cfg['file_date']
         self.downsample_rate = cfg['downsample_rate']
+        self.time_difference = cfg['time_difference']
+        self.altitude_buffer = cfg['altitude_buffer']
+        self.departure_unix_time = cfg['departure_unix_time']
+
+        try:
+            os.makedirs(
+                'track_point_{}_{}2{}'.format(cfg['file_date'], cfg['departure_airport'], cfg['arrival_airport']))
+        except OSError:
+            pass
+
+        try:
+            os.makedirs('track_point_{}_{}2{}_downsampled'.format(cfg['file_date'], cfg['departure_airport'],
+                                                                  cfg['arrival_airport']))
+        except OSError:
+            pass
+
+        try:
+            os.makedirs('track_point_{}_{}2{}_altitude_buffered'.format(cfg['file_date'], cfg['departure_airport'],
+                                                                        cfg['arrival_airport']))
+        except OSError:
+            pass
 
     def get_flight_data(self):
 
         df = pd.read_csv('{}/IFF_USA_{}.csv'.format(cfg['path_to_data'], str(self.date)), chunksize=self.chunk_size,
                          iterator=True, names=range(0, 18), low_memory=False)
-        print ("Data File Loaded.")
+        print("Data File Loaded.")
 
         i = 0
 
@@ -46,7 +67,7 @@ class FAA_Departure_Arrival_Parser(object):
         for chunk in df:
 
             i += 1
-            print ("Reading chunk number {}".format(str(i)))
+            print("Reading chunk number {}".format(str(i)))
 
             # return the rows numbers that departure and return airport matches
             self.rows = []
@@ -54,7 +75,7 @@ class FAA_Departure_Arrival_Parser(object):
 
             num_of_flights = len(self.rows)
 
-            print ("Found {} flight(s) within this chunk of data".format(num_of_flights))
+            print("Found {} flight(s) within this chunk of data".format(num_of_flights))
 
             # store unix time, run way information, flight callsign and aircraft type
             finfo = chunk.loc[self.rows, [1, 4, 7, 9]]
@@ -78,14 +99,28 @@ class FAA_Departure_Arrival_Parser(object):
             # store track point and write to csv
             for n in range(num_of_flights):
                 track = chunk.loc[chunk.index[chunk[7] == finfo.iloc[n, 2]] & chunk.index[chunk[0] == 3], [1, 9, 10, 11]]
+
+                difference = self.departure_unix_time - float(track[1].iloc[0])  # fix departure time
+
+                track[1] = pd.to_numeric(track[1]).add(difference)  # add unix time difference
+
                 track.to_csv('track_point_{}_{}2{}/{}_{}.csv'.format(
                              self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
                              sep=',',
                              index=False,
                              header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
 
+                # save downsampled track
                 downsampled_track = track.iloc[::self.downsample_rate, :]
                 downsampled_track.to_csv('track_point_{}_{}2{}_downsampled/{}_{}.csv'.format(
+                             self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
+                             sep=',',
+                             index=False,
+                             header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
+
+                # add altitude buffer
+                altitude_track = downsampled_track[pd.to_numeric(downsampled_track[11]) >= self.altitude_buffer]
+                altitude_track.to_csv('track_point_{}_{}2{}_altitude_buffered/{}_{}.csv'.format(
                              self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
                              sep=',',
                              index=False,
@@ -97,19 +132,13 @@ if __name__ == '__main__':
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
            'chunk_size': 1e6,
-           'file_date': 20170407,
+           'file_date': 20170405,
            'downsample_rate': 5,  # take one row out of five rows
+           'departure_unix_time': 1491577800,  # fix departure time of aircraft
+           'time_difference': 0,  # unix time difference to shift
+           'altitude_buffer': 100,  # keep track points above specific altitude buffer
            'path_to_data': '/mnt/data/Research/data'}
-
-    try:
-        os.makedirs('track_point_{}_{}2{}'.format(cfg['file_date'], cfg['departure_airport'], cfg['arrival_airport']))
-    except OSError:
-        pass
-
-    try:
-        os.makedirs('track_point_{}_{}2{}_downsampled'.format(cfg['file_date'], cfg['departure_airport'], cfg['arrival_airport']))
-    except OSError:
-        pass
 
     fun = FAA_Departure_Arrival_Parser(cfg)
     fun.get_flight_data()
+

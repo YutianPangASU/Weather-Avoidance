@@ -11,9 +11,9 @@ A list of useful python functions.
 @Last Modified date: 2019-01-29
 """
 
-import datetime
+import math
 import numpy as np
-from datetime import datetime
+import datetime
 
 
 def unixtime_to_datetime(unix_time):  # input can be an array
@@ -73,7 +73,7 @@ def get_weather_file(unix_time):
 
 
 def check_convective_weather_files(weather_path, unix_time):
-    pin = datetime.utcfromtimestamp(int(float(unix_time))).strftime('%Y%m%d %H%M%S')  # time handle to check CIWS database
+    pin = datetime.datetime.utcfromtimestamp(int(float(unix_time))).strftime('%Y%m%d %H%M%S')  # time handle to check CIWS database
     array = np.asarray([0, 230, 500, 730,
                         1000, 1230, 1500, 1730,
                         2000, 2230, 2500, 2730,
@@ -179,6 +179,41 @@ def download_from_web(date):
     print("Finished downloading weather files.")
 
 
+def lat2y(a):
+    Radius = 6378137.0  # Radius of Earth
+    return math.log(math.tan(math.pi / 4 + math.radians(a) / 2)) * Radius
+
+
+def lot2x(a):
+    Radius = 6378137.0  # Radius of Earth
+    return math.radians(a) * Radius
+
+
+def merc_index_to_wgs84(index, resize_ratio):
+
+    import pyproj
+
+    lat_max = 53.8742945085336
+    lat_min = 19.35598953632181
+    lon_max = -61.65138656927017
+    lon_min = -134.3486134307298
+
+    p1 = pyproj.Proj(init="epsg:4326")
+    p2 = pyproj.Proj(init="epsg:3857")
+    x_min, y_min = pyproj.transform(p1, p2, lon_min, lat_min)
+    x_max, y_max = pyproj.transform(p1, p2, lon_max, lat_max)
+    s_y = np.linspace(y_min, y_max, 3520)
+    s_x = np.linspace(x_min, x_max, 5120)
+    step_x = s_x[1] - s_x[0]
+    step_y = s_y[1] - s_y[0]
+
+    y_merc = s_y[index[1]*resize_ratio]
+    x_merc = s_x[index[0]*resize_ratio]
+
+    lon, lat = pyproj.transform(p2, p1, x_merc, y_merc)
+
+    print(lat, lon)
+    return [lat, lon]
 
 
 if __name__ == '__main__':
@@ -188,4 +223,6 @@ if __name__ == '__main__':
     #flight_plan_parser(fp)
     #wps = fetch_from_web(fp)
     date = '20170405'
-    download_from_web(date)
+    #download_from_web(date)
+    index = [4268, 1965]
+    #merc_index_to_wgs84(index)

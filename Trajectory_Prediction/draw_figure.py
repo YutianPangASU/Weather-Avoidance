@@ -203,5 +203,5 @@ if __name__ == '__main__':
 
     fun.draw_weather_contour() # plots saved in '/Plots'
 
-    fun.make_gif() # make gif use the plots in '/Plots
+    #fun.make_gif() # make gif use the plots in '/Plots
 

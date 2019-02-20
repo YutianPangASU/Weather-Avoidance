@@ -9,22 +9,12 @@ Last Modified on Feb 11, 2019
 
 """
 
-import math
+import os
 import time
 import pandas as pd
 from utils import *
 import numpy as np
 from netCDF4 import Dataset
-
-
-def lat2y(a):
-    Radius = 6378137.0  # Radius of Earth
-    return math.log(math.tan(math.pi / 4 + math.radians(a) / 2)) * Radius
-
-
-def lot2x(a):
-    Radius = 6378137.0  # Radius of Earth
-    return math.radians(a) * Radius
 
 
 class weather_cube_generator(object):
@@ -39,7 +29,23 @@ class weather_cube_generator(object):
         print("Processing flight {}_{}".format(self.date, self.call_sign))
 
         self.traj = pd.read_csv(cfg['trajectory_path'])
-        self.traj = self.traj.iloc[::self.downsample_ratio, :].reset_index()  # downsample trajectory
+        # self.traj = self.traj.iloc[::self.downsample_ratio, :].reset_index()  # downsample trajectory
+
+        self.departure_airport = cfg['departure_airport']
+        self.arrival_airport = cfg['arrival_airport']
+
+        try:
+            os.makedirs('weather data/{}2{}_ET'.format(self.departure_airport, self.arrival_airport))
+        except OSError:
+            pass
+
+        try:
+            os.makedirs('weather data/{}2{}_ET_point'.format(self.departure_airport, self.arrival_airport))
+        except OSError:
+            pass
+
+        self.lats = np.load('lats.npy')
+        self.lons = np.load('lons.npy')
 
     def find_mean(self, x, y, values):
         # find mean
@@ -56,7 +62,7 @@ class weather_cube_generator(object):
 
     def get_cube(self):
 
-        y_max, y_min, x_max, x_min = lat2y(58.874), lat2y(19.356), lot2x(-61.651), lot2x(-134.349)
+        y_max, y_min, x_max, x_min = lat2y(53.8742945085336), lat2y(19.35598953632181), lot2x(-61.65138656927017), lot2x(-134.3486134307298)
 
         dim = np.int32(np.linspace(1, len(self.traj)-1, len(self.traj)-1))
         nn = np.int32(np.linspace(1, self.cube_size, self.cube_size))
@@ -77,7 +83,7 @@ class weather_cube_generator(object):
 
         start = time.time()
 
-        #for i in range(1, 10):
+        #for i in range(1, 10):  # debug only
         for i in dim:
 
             # compute index
@@ -161,19 +167,24 @@ class weather_cube_generator(object):
         print("Total time for one trajectory is: ", time.time() - start)
 
         # save data
-        np.save('weather data/ET/{}_{}'.format(self.date, self.call_sign), weather_tensor)
-        np.save('weather data/ET_point/{}_{}'.format(self.date, self.call_sign), point_t)
+        np.save('weather data/{}2{}_ET/{}_{}'.format(self.departure_airport, self.arrival_airport, self.date, self.call_sign), weather_tensor)
+        np.save('weather data/{}2{}_ET_point/{}_{}'.format(self.departure_airport, self.arrival_airport, self.date, self.call_sign), point_t)
 
 
 if __name__ == '__main__':
     
     cfg ={'cube_size': 20,
-          'resize_ratio': 10,
+          'resize_ratio': 1,
           'downsample_ratio': 5,
           'date': 20170405,
           'call_sign': 'AAL1',
-          'weather_path': '/mnt/data/Research/data/'}
-    cfg['trajectory_path'] = 'track_point_{}_JFK2LAX/{}_{}.csv'.format(cfg['date'], cfg['call_sign'], cfg['date'])
+          'departure_airport': 'JFK',
+          'arrival_airport': 'LAX',
+          'weather_path': '/mnt/data/Research/data/',
+          'handle': ''}
+
+    cfg['trajectory_path'] = 'track_point_{}_{}2{}/{}_{}.csv'.\
+        format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'], cfg['call_sign'], cfg['date'])
 
     fun = weather_cube_generator(cfg)
     fun.get_cube()
