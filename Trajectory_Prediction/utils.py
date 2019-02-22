@@ -224,5 +224,5 @@ if __name__ == '__main__':
     #wps = fetch_from_web(fp)
     date = '20170405'
     #download_from_web(date)
-    index = [4268, 1965]
-    #merc_index_to_wgs84(index)
+    index = [4266, 1965]
+    merc_index_to_wgs84(index, resize_ratio=1)

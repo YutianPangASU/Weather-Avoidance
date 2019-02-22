@@ -9,10 +9,10 @@ This Python script is used to parse the data downloaded from Sherlock FAA databa
 All of the flights fly between these two airport will be parsed and flight information will be saved in a csv file.
 The script will also create a folder to save the history track points of each flight callsign.
 
-To run the script, change "path_to_data" and paste "python2 flight_data_parser.py" in terminal.
+To run the script, change "path_to_data" and paste "python flight_data_parser.py" in terminal.
 
 @Last Modified by: Yutian Pang
-@Last Modified date: 2019-02-20
+@Last Modified date: 2019-02-21
 """
 
 import pandas as pd
@@ -32,25 +32,37 @@ class FAA_Departure_Arrival_Parser(object):
         self.altitude_buffer = cfg['altitude_buffer']
         self.departure_unix_time = cfg['departure_unix_time']
 
-        try:
-            os.makedirs(
-                'track_point_{}_{}2{}'.format(cfg['file_date'], cfg['departure_airport'], cfg['arrival_airport']))
-        except OSError:
-            pass
+    def check_path_and_clear_cache(self):
 
+        # remove csv
+        if os.path.exists('flight_data_{}_{}_to_{}.csv'.format(self.date, self.departure, self.arrival)):
+            os.remove('flight_data_{}_{}_to_{}.csv'.format(self.date, self.departure, self.arrival))
+        else:
+            print("The flight plan file does not exist.")
+
+        # make dir
         try:
-            os.makedirs('track_point_{}_{}2{}_downsampled'.format(cfg['file_date'], cfg['departure_airport'],
+            os.makedirs('track_point_{}_{}2{}'.format(cfg['file_date'],
+                                                      cfg['departure_airport'],
+                                                      cfg['arrival_airport']))
+
+            os.makedirs('track_point_{}_{}2{}_downsampled'.format(cfg['file_date'],
+                                                                  cfg['departure_airport'],
                                                                   cfg['arrival_airport']))
+
+            os.makedirs('track_point_{}_{}2{}_altitude_buffered'.format(cfg['file_date'],
+                                                                        cfg['departure_airport'],
+                                                                        cfg['arrival_airport']))
+
         except OSError:
+            print("Path already exist.")
             pass
 
-        try:
-            os.makedirs('track_point_{}_{}2{}_altitude_buffered'.format(cfg['file_date'], cfg['departure_airport'],
-                                                                        cfg['arrival_airport']))
-        except OSError:
-            pass
+        print("File path cleared.")
 
     def get_flight_data(self):
+
+        self.check_path_and_clear_cache()
 
         df = pd.read_csv('{}/IFF_USA_{}.csv'.format(cfg['path_to_data'], str(self.date)), chunksize=self.chunk_size,
                          iterator=True, names=range(0, 18), low_memory=False)
@@ -100,9 +112,9 @@ class FAA_Departure_Arrival_Parser(object):
             for n in range(num_of_flights):
                 track = chunk.loc[chunk.index[chunk[7] == finfo.iloc[n, 2]] & chunk.index[chunk[0] == 3], [1, 9, 10, 11]]
 
-                difference = self.departure_unix_time - float(track[1].iloc[0])  # fix departure time
-
-                track[1] = pd.to_numeric(track[1]).add(difference)  # add unix time difference
+                if self.departure_unix_time is not None:
+                    difference = self.departure_unix_time - float(track[1].iloc[0])  # fix departure time
+                    track[1] = pd.to_numeric(track[1]).add(difference)  # add unix time difference
 
                 track.to_csv('track_point_{}_{}2{}/{}_{}.csv'.format(
                              self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
@@ -132,13 +144,12 @@ if __name__ == '__main__':
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
            'chunk_size': 1e6,
-           'file_date': 20170405,
+           'file_date': 20170905,
            'downsample_rate': 5,  # take one row out of five rows
-           'departure_unix_time': 1491577800,  # fix departure time of aircraft
+           'departure_unix_time': None,  # fix departure unix time of aircraft
            'time_difference': 0,  # unix time difference to shift
-           'altitude_buffer': 100,  # keep track points above specific altitude buffer
+           'altitude_buffer': 0,  # keep track points above specific altitude buffer
            'path_to_data': '/mnt/data/Research/data'}
 
-    fun = FAA_Departure_Arrival_Parser(cfg)
-    fun.get_flight_data()
+    FAA_Departure_Arrival_Parser(cfg).get_flight_data()
 
