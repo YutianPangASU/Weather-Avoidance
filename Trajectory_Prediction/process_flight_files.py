@@ -38,11 +38,12 @@ class flight_data_generator(object):
         self.traj = pd.read_csv('track_point_{}_{}2{}/{}_{}.csv'.
                                 format(self.date, self.departure_airport, self.arrival_airport, self.call_sign, self.date))
 
-        self.traj['UNIX TIME'].astype(int)  # convert time column to int as index of table
+        self.traj['UNIX TIME'] = self.traj['UNIX TIME'].astype(int)  # convert time column to int as index of table
 
     def process_trajectory(self):
 
         self.traj = self.traj.set_index('UNIX TIME', drop=True)  # set unix time column  as table index
+        self.traj = self.traj[~self.traj.index.duplicated(keep='first')]  # remove duplicate index after int operation
 
         # interpolate trajectory data to 1 second interval
         self.total_time = np.arange(self.traj.index[0], self.traj.index[-1])
@@ -119,6 +120,10 @@ class flight_data_generator(object):
         self.fp_return = self.fp.iloc[int((len(self.fp)-self.sample_interval*self.dimension)/2):
                                       int((len(self.fp)+self.sample_interval*self.dimension)/2):
                                       self.sample_interval, :]
+
+        # fill nan values in self.fp_return with closest values
+        self.fp_return = self.fp_return.fillna(method='bfill')
+
         # save fix size trajectory
         np.save('flightplan data/{}_{}.npy'.format(self.date, self.call_sign), self.fp_return)
 
@@ -134,8 +139,8 @@ if __name__ == '__main__':
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
            'date': 20170406,
-           'call_sign': 'DAL424',
-           'output_dimension': 1000,
+           'call_sign': 'AAL255',
+           'output_dimension': 100,
            'altitude_buffer': 100,
            }
 

@@ -16,15 +16,17 @@ import os
 
 date_list = [20170405, 20170406, 20170407]  # folder name to loop through
 
+
 cfg = {'cube_size': 20,  # the size of cube to generate
        'resize_ratio': 1,  # ratio of resize performs to the original weather source
        'downsample_ratio': 5,  # downsample ratio to trajectory files
        'departure_airport': 'JFK',
        'arrival_airport': 'LAX',
-       'output_dimension': 1000,  # output dimension for trajectory and flight plan
+       'output_dimension': 50,  # output dimension for trajectory and flight plan
        'altitude_buffer': 100,  # altitude buffer unit: feet
        'weather_path': '/mnt/data/Research/data/', # path to weather file
        }
+
 
 for date in date_list:
     call_sign_list = sorted([x.split('.')[0] for x in os.listdir("track_point_{}_{}2{}/".
@@ -39,16 +41,7 @@ for date in date_list:
         cfg['trajectory_path'] = 'flight_plan_{}_{}2{}/{}_{}.csv'. \
             format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'], cfg['call_sign'], cfg['date'])
         print(cfg['trajectory_path'])
-        #
-        # # run flight data generator
-        # fun = flight_data_generator(cfg)
-        # fun.process_trajectory()
-        # fun.process_flightplan()
-        # del fun
-        # # run weather data generator
-        # fun = weather_cube_generator(cfg)
-        # fun.get_cube()
-        # del fun
+
 
         # run flight data generator
         try:
@@ -69,5 +62,5 @@ for date in date_list:
             print("Finish weather data for {}.".format(call_sign))
 
         except:  # ignore file not found error
-            print("Error in weather data for{}".format(call_sign))
+            print("Error in weather data for {}".format(call_sign))
             pass

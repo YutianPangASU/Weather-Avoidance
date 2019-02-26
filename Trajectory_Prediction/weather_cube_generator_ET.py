@@ -89,7 +89,7 @@ class weather_cube_generator(object):
         for i in dim:
 
             # compute index
-            if (i+1)/100 == 0:
+            if (i+1) % (len(self.traj)/10) == 0:
                 print("Working on Point {}/{}".format(1+i, len(self.traj)))
 
             # check weather file exists at time i
