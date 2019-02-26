@@ -50,7 +50,8 @@ class weather_cube_generator(object):
     def find_mean(self, x, y, values):
         # find mean
         x_p_index = self.resize_ratio * np.linspace(x - 1, x + 1, 2 * self.resize_ratio + 1)
-        y_p_index = values.shape[0] - self.resize_ratio * np.linspace(y - 1, y + 1, 2 * self.resize_ratio + 1)
+        #y_p_index = values.shape[0] - self.resize_ratio * np.linspace(y - 1, y + 1, 2 * self.resize_ratio + 1)
+        y_p_index = self.resize_ratio * np.linspace(y - 1, y + 1, 2 * self.resize_ratio + 1)
 
         x_p_index = x_p_index.astype('int')
         y_p_index = y_p_index.astype('int')
@@ -77,17 +78,19 @@ class weather_cube_generator(object):
         weather_tensor = []
         point_t = []
 
+        # information need from the original data file
         x = self.traj['LONGITUDE']
         y = self.traj['LATITUDE']
         t = self.traj['UNIX TIME']
 
         start = time.time()
 
-        #for i in range(1, 10):  # debug only
+        #for i in range(1, 100):  # debug only
         for i in dim:
 
             # compute index
-            print("Working on Point {}/{}".format(1+i, len(self.traj)))
+            if (i+1)/100 == 0:
+                print("Working on Point {}/{}".format(1+i, len(self.traj)))
 
             # check weather file exists at time i
             weather_file = check_convective_weather_files(self.weather_path, t[i])
@@ -177,11 +180,11 @@ if __name__ == '__main__':
           'resize_ratio': 1,
           'downsample_ratio': 5,
           'date': 20170405,
-          'call_sign': 'AAL1',
+          'call_sign': 'AAL133',
           'departure_airport': 'JFK',
           'arrival_airport': 'LAX',
           'weather_path': '/mnt/data/Research/data/',
-          'handle': ''}
+          }
 
     cfg['trajectory_path'] = 'track_point_{}_{}2{}/{}_{}.csv'.\
         format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'], cfg['call_sign'], cfg['date'])

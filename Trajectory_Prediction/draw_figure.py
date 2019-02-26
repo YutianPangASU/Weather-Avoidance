@@ -192,7 +192,7 @@ if __name__ == '__main__':
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
            'date': '20170405',
-           'call_sign_to_draw': 'AAL1'}
+           'call_sign_to_draw': 'AAL133'}
 
     cfg['object_directory'] = "track_point_{}_{}2{}".format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'])
     cfg['weather_directory'] = '/mnt/data/Research/data/{}ET'.format(cfg['date'])

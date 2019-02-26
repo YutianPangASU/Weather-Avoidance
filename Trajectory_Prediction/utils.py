@@ -153,6 +153,23 @@ def fetch_from_web(str):  # use online waypoint database source
     return np.asarray(coords).astype(float)  # return flight plan as np.array
 
 
+def find_index_fp(x, y, resize_ratio):
+    y_max, y_min, x_max, x_min = lat2y(53.8742945085336), lat2y(19.35598953632181), lot2x(-61.65138656927017), lot2x(
+        -134.3486134307298)
+
+    s_y = np.linspace(y_min, y_max, int(3520 / resize_ratio))
+    s_x = np.linspace(x_min, x_max, int(5120 / resize_ratio))
+
+    step_x = s_x[1] - s_x[0]
+    step_y = s_y[1] - s_y[0]
+
+    # save weather values at traj point
+    x_p = np.int(round((lot2x(x) - x_min) / step_x))
+    y_p = np.int(round((lat2y(y) - y_min) / step_y))
+
+    return x_p, y_p
+
+
 def download_from_web(date):
 
     url = 'https://nomads.ncdc.noaa.gov/data/namanl/{}/{}/namanl_218_{}_0000_001.grb'.format(date[:6], date, date)

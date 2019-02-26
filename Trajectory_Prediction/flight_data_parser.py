@@ -46,13 +46,13 @@ class FAA_Departure_Arrival_Parser(object):
                                                       cfg['departure_airport'],
                                                       cfg['arrival_airport']))
 
-            os.makedirs('track_point_{}_{}2{}_downsampled'.format(cfg['file_date'],
-                                                                  cfg['departure_airport'],
-                                                                  cfg['arrival_airport']))
-
-            os.makedirs('track_point_{}_{}2{}_altitude_buffered'.format(cfg['file_date'],
-                                                                        cfg['departure_airport'],
-                                                                        cfg['arrival_airport']))
+            # os.makedirs('track_point_{}_{}2{}_downsampled'.format(cfg['file_date'],
+            #                                                       cfg['departure_airport'],
+            #                                                       cfg['arrival_airport']))
+            #
+            # os.makedirs('track_point_{}_{}2{}_altitude_buffered'.format(cfg['file_date'],
+            #                                                             cfg['departure_airport'],
+            #                                                             cfg['arrival_airport']))
 
         except OSError:
             print("Path already exist.")
@@ -122,21 +122,21 @@ class FAA_Departure_Arrival_Parser(object):
                              index=False,
                              header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
 
-                # save downsampled track
-                downsampled_track = track.iloc[::self.downsample_rate, :]
-                downsampled_track.to_csv('track_point_{}_{}2{}_downsampled/{}_{}.csv'.format(
-                             self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
-                             sep=',',
-                             index=False,
-                             header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
-
-                # add altitude buffer
-                altitude_track = downsampled_track[pd.to_numeric(downsampled_track[11]) >= self.altitude_buffer]
-                altitude_track.to_csv('track_point_{}_{}2{}_altitude_buffered/{}_{}.csv'.format(
-                             self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
-                             sep=',',
-                             index=False,
-                             header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
+                # # save downsampled track
+                # downsampled_track = track.iloc[::self.downsample_rate, :]
+                # downsampled_track.to_csv('track_point_{}_{}2{}_downsampled/{}_{}.csv'.format(
+                #              self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
+                #              sep=',',
+                #              index=False,
+                #              header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
+                #
+                # # add altitude buffer
+                # altitude_track = downsampled_track[pd.to_numeric(downsampled_track[11]) >= self.altitude_buffer]
+                # altitude_track.to_csv('track_point_{}_{}2{}_altitude_buffered/{}_{}.csv'.format(
+                #              self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
+                #              sep=',',
+                #              index=False,
+                #              header=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
 
 
 if __name__ == '__main__':
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
            'chunk_size': 1e6,
-           'file_date': 20170905,
+           'file_date': 20170407,
            'downsample_rate': 5,  # take one row out of five rows
            'departure_unix_time': None,  # fix departure unix time of aircraft
            'time_difference': 0,  # unix time difference to shift
