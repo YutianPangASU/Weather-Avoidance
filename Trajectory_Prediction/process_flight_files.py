@@ -56,7 +56,7 @@ class flight_data_generator(object):
         self.traj_buffered = self.traj[pd.to_numeric(self.traj['ALTITUDE']) >= self.altitude_threshold]
 
         # get samples with sample interval
-        self.sample_interval = round(len(self.traj_buffered) / self.dimension)
+        self.sample_interval = int(len(self.traj_buffered) / self.dimension)
         self.traj_return = self.traj.iloc[int((len(self.traj)-self.sample_interval*self.dimension)/2):
                                           int((len(self.traj)+self.sample_interval*self.dimension)/2):
                                           self.sample_interval, :]
@@ -138,10 +138,10 @@ if __name__ == '__main__':
 
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
-           'date': 20170406,
-           'call_sign': 'AAL255',
-           'output_dimension': 100,
-           'altitude_buffer': 100,
+           'date': 20170405,
+           'call_sign': 'AAL133',
+           'output_dimension': 50,
+           'altitude_buffer': 0,
            }
 
     fun = flight_data_generator(cfg)

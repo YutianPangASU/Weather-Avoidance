@@ -144,7 +144,7 @@ if __name__ == '__main__':
     cfg = {'departure_airport': 'JFK',
            'arrival_airport': 'LAX',
            'chunk_size': 1e6,
-           'file_date': 20170407,
+           'file_date': 20170905,
            'downsample_rate': 5,  # take one row out of five rows
            'departure_unix_time': None,  # fix departure unix time of aircraft
            'time_difference': 0,  # unix time difference to shift
