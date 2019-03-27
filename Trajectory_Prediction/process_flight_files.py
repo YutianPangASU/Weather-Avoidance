@@ -35,7 +35,7 @@ class flight_data_generator(object):
             print("Path already exist.")
             pass
 
-        self.traj = pd.read_csv('track_point_{}_{}2{}/{}_{}.csv'.
+        self.traj = pd.read_csv('raw_track/track_point_{}_{}2{}/{}_{}.csv'.
                                 format(self.date, self.departure_airport, self.arrival_airport, self.call_sign, self.date))
 
         self.traj['UNIX TIME'] = self.traj['UNIX TIME'].astype(int)  # convert time column to int as index of table
@@ -60,6 +60,12 @@ class flight_data_generator(object):
         self.traj_return = self.traj.iloc[int((len(self.traj)-self.sample_interval*self.dimension)/2):
                                           int((len(self.traj)+self.sample_interval*self.dimension)/2):
                                           self.sample_interval, :]
+
+        # fix the first and last point as the airport coordinates
+        self.traj_return.is_copy = False  # avoid warning
+        self.traj_return.iloc[0] = self.traj.iloc[0]
+        self.traj_return.iloc[-1] = self.traj.iloc[-1]
+
         # save fix size trajectory
         np.save('trajectory data/{}_{}.npy'.format(self.date, self.call_sign), self.traj_return)
 
@@ -72,7 +78,7 @@ class flight_data_generator(object):
         flight_plan_str = file[file[2] == self.call_sign].values[0][4]
         fp = fetch_from_web(flight_plan_str)
 
-        # debug only
+        # for debug only
         # fp = np.asarray([[40.639751, -73.778925],
         #                       [40.970986, -74.959828],
         #                       [41.480492, -84.64675],
@@ -101,6 +107,10 @@ class flight_data_generator(object):
             altitude_fp += [self.traj.iloc[row_idx]['ALTITUDE']]
             unix_time_fp += [self.traj.index[row_idx]]
         self.fp = np.column_stack([np.asarray(unix_time_fp), fp, altitude_fp])  # flight plan with unix time and altitude
+
+        # departure and arrival time match with trajectory
+        self.fp[0, 0] = self.traj_return.index[0]
+        self.fp[-1, 0] = self.traj_return.index[-1]
 
         # convert to a dataframe
         self.fp = pd.DataFrame(self.fp, columns=['UNIX TIME', 'LATITUDE', 'LONGITUDE', 'ALTITUDE'])
@@ -140,7 +150,7 @@ if __name__ == '__main__':
            'arrival_airport': 'LAX',
            'date': 20170405,
            'call_sign': 'AAL133',
-           'output_dimension': 50,
+           'output_dimension': 1000,
            'altitude_buffer': 0,
            }
 

@@ -233,6 +233,19 @@ def merc_index_to_wgs84(index, resize_ratio):
     return [lat, lon]
 
 
+def get_date_list():
+    # get date_list
+    list_1 = list(range(20181101, 20181131))
+    list_2 = list(range(20181201, 20181232))
+    list_3 = list(range(20190101, 20190132))
+    list_4 = list(range(20190201, 20190206))
+    list_5 = [20170405, 20170406, 20170407, 20180723, 20180724, 20170905, 20170906]
+    date_list = list_1 + list_2 + list_3 + list_4 + list_5
+    to_remove = [20181229, 20181230, 20181231, 20190125, 20190126, 20190127, 20190128, 20181102]
+    [date_list.remove(day) for day in to_remove]
+    return date_list
+
+
 if __name__ == '__main__':
 
     fp = 'KJFK..COATE.Q436.RAAKK.Q438.RUBYY..DABJU..KG78M..DBQ.J100.JORDY..KP72G..OBH.J10.LBF..LEWOY..KD60U..JNC..HVE..PROMT.Q88.HAKMN.ANJLL1.KLAX/0539'

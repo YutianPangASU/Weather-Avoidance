@@ -27,7 +27,6 @@ class FAA_Departure_Arrival_Parser(object):
         self.arrival = cfg['arrival_airport']
         self.chunk_size = cfg['chunk_size']
         self.date = cfg['file_date']
-        self.downsample_rate = cfg['downsample_rate']
         self.time_difference = cfg['time_difference']
         self.altitude_buffer = cfg['altitude_buffer']
         self.departure_unix_time = cfg['departure_unix_time']
@@ -42,7 +41,7 @@ class FAA_Departure_Arrival_Parser(object):
 
         # make dir
         try:
-            os.makedirs('track_point_{}_{}2{}'.format(cfg['file_date'],
+            os.makedirs('raw_track/track_point_{}_{}2{}'.format(cfg['file_date'],
                                                       cfg['departure_airport'],
                                                       cfg['arrival_airport']))
 
@@ -62,7 +61,7 @@ class FAA_Departure_Arrival_Parser(object):
 
     def get_flight_data(self):
 
-        self.check_path_and_clear_cache()
+        self.check_path_and_clear_cache()  # check file path and clear
 
         df = pd.read_csv('{}/IFF_USA_{}.csv'.format(cfg['path_to_data'], str(self.date)), chunksize=self.chunk_size,
                          iterator=True, names=range(0, 18), low_memory=False)
@@ -116,7 +115,7 @@ class FAA_Departure_Arrival_Parser(object):
                     difference = self.departure_unix_time - float(track[1].iloc[0])  # fix departure time
                     track[1] = pd.to_numeric(track[1]).add(difference)  # add unix time difference
 
-                track.to_csv('track_point_{}_{}2{}/{}_{}.csv'.format(
+                track.to_csv('raw_track/track_point_{}_{}2{}/{}_{}.csv'.format(
                              self.date, cfg['departure_airport'], cfg['arrival_airport'], finfo.iloc[n, 2], self.date),
                              sep=',',
                              index=False,
@@ -141,15 +140,26 @@ class FAA_Departure_Arrival_Parser(object):
 
 if __name__ == '__main__':
 
-    cfg = {'departure_airport': 'JFK',
-           'arrival_airport': 'LAX',
-           'chunk_size': 1e6,
-           'file_date': 20170905,
-           'downsample_rate': 5,  # take one row out of five rows
-           'departure_unix_time': None,  # fix departure unix time of aircraft
-           'time_difference': 0,  # unix time difference to shift
-           'altitude_buffer': 0,  # keep track points above specific altitude buffer
-           'path_to_data': '/mnt/data/Research/data'}
+    from utils import get_date_list
 
-    FAA_Departure_Arrival_Parser(cfg).get_flight_data()
+    date_list = get_date_list()
 
+    date_list = [20170405]
+
+    for date in date_list:
+        cfg = {'departure_airport': 'JFK',
+               'arrival_airport': 'LAX',
+               'chunk_size': 1e6,
+               'file_date': date,
+               'departure_unix_time': None,  # fix departure unix time of aircraft
+               'time_difference': 0,  # unix time difference to shift
+               'altitude_buffer': 0,  # keep track points above specific altitude buffer
+               'path_to_data': '/mnt/data/Research/data'}
+
+        try:
+            fun = FAA_Departure_Arrival_Parser(cfg).get_flight_data()
+            del fun
+            print("Finish flight data for {}.".format(date))
+        except:
+            print("Error in flight data on {}.".format(date))
+            pass

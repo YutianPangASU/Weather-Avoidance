@@ -44,8 +44,8 @@ class weather_cube_generator(object):
         except OSError:
             pass
 
-        self.lats = np.load('lats.npy')
-        self.lons = np.load('lons.npy')
+        # self.lats = np.load('lats.npy')
+        # self.lons = np.load('lons.npy')
 
     def find_mean(self, x, y, values):
         # find mean
@@ -89,7 +89,7 @@ class weather_cube_generator(object):
         for i in dim:
 
             # compute index
-            if (i+1) % (len(self.traj)/10) == 0:
+            if (i+1) % int((len(self.traj)/20)) == 0:
                 print("Working on Point {}/{}".format(1+i, len(self.traj)))
 
             # check weather file exists at time i
@@ -175,21 +175,61 @@ class weather_cube_generator(object):
 
 
 if __name__ == '__main__':
-    
-    cfg ={'cube_size': 20,
-          'resize_ratio': 1,
-          'downsample_ratio': 5,
-          'date': 20170405,
-          'call_sign': 'AAL133',
-          'departure_airport': 'JFK',
-          'arrival_airport': 'LAX',
-          'weather_path': '/mnt/data/Research/data/',
-          }
 
-    cfg['trajectory_path'] = 'track_point_{}_{}2{}/{}_{}.csv'.\
-        format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'], cfg['call_sign'], cfg['date'])
+    # cfg ={'cube_size': 20,
+    #       'resize_ratio': 1,
+    #       'downsample_ratio': 5,
+    #       'date': 20170405,
+    #       'call_sign': 'AAL133',
+    #       'departure_airport': 'JFK',
+    #       'arrival_airport': 'LAX',
+    #       'weather_path': '/mnt/data/Research/data/',
+    #       }
+    #
+    # cfg['trajectory_path'] = 'raw_track/track_point_{}_{}2{}/{}_{}.csv'.\
+    #     format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'], cfg['call_sign'], cfg['date'])
+    #
+    # fun = weather_cube_generator(cfg)
+    # fun.get_cube()
 
-    fun = weather_cube_generator(cfg)
-    fun.get_cube()
+
+    # run on trajectory point
+
+    date_list = [20170405, 20170406, 20170407]  # folder name to loop through
+
+    cfg = {'cube_size': 20,  # the size of cube to generate
+           'resize_ratio': 1,  # ratio of resize performs to the original weather source
+           'downsample_ratio': 5,  # downsample ratio to trajectory files
+           'departure_airport': 'JFK',
+           'arrival_airport': 'LAX',
+           'output_dimension': 1000,  # output dimension for trajectory and flight plan
+           'altitude_buffer': 0,  # altitude buffer unit: feet
+           'weather_path': '/mnt/data/Research/data/',  # path to weather file
+           }
+
+    for date in date_list:
+        call_sign_list = sorted([x.split('.')[0] for x in os.listdir("raw_track/track_point_{}_{}2{}/".
+                                                                     format(date, cfg['departure_airport'], cfg['arrival_airport']))])
+        for call_sign in call_sign_list:
+
+            cfg['date'] = date
+            cfg['call_sign'] = call_sign.split('_')[0]
+
+            # modify departure and arrival airport
+            # cfg['trajectory_path'] = 'raw_track/track_points_{}_{}2{}/{}_{}.csv'. \
+            cfg['trajectory_path'] = 'raw_track/track_point_{}_{}2{}/{}_{}.csv'. \
+                format(cfg['date'], cfg['departure_airport'], cfg['arrival_airport'], cfg['call_sign'], cfg['date'])
+            print(cfg['trajectory_path'])
+
+            try:
+                fun = weather_cube_generator(cfg)
+                fun.get_cube()
+                del fun
+                print("Finish weather data for {}.".format(call_sign))
+            except:  # ignore file not found error
+                print("Error in weather data for {}".format(call_sign))
+                pass
+
+
 
 
