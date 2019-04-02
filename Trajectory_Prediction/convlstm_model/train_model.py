@@ -27,8 +27,9 @@ class train_weather_lstm(object):
                     print(e)
 
     def load_data(self):
+	print("Load)
         # get file list
-        file_list = sorted(os.listdir('buffer0/training data/{}/flightplan data/'.format(self.input_dimension)))
+        file_list = sorted(os.listdir('training data/{}/weather data/JFK2LAX_ET'.format(self.input_dimension)))
         data_size = len(file_list)
 
         # create array to store files
@@ -38,9 +39,9 @@ class train_weather_lstm(object):
 
         # load files and store into one array
         for i in range(data_size):
-            x_fp[i, :, :] = np.load('buffer0/training data/{}/flightplan data/{}'.format(self.input_dimension, file_list[i]))
-            x_weather[i, :, :, :] = np.load('buffer0/training data/{}/weather data/JFK2LAX_ET/{}'.format(self.input_dimension, file_list[i]))
-            y_traj[i, :, :] = np.load('buffer0/training data/{}/trajectory data/{}'.format(self.input_dimension, file_list[i]))
+            x_fp[i, :, :] = np.load('training data/{}/flightplan data/{}'.format(self.input_dimension, file_list[i]))
+            x_weather[i, :, :, :] = np.load('training data/{}/weather data/JFK2LAX_ET/{}'.format(self.input_dimension, file_list[i]))
+            y_traj[i, :, :] = np.load('training data/{}/trajectory data/{}'.format(self.input_dimension, file_list[i]))
 
         # data normalization
         lat_max = 53.8742945085336
@@ -48,8 +49,8 @@ class train_weather_lstm(object):
         lon_min = -134.3486134307298
         lon_max = -61.65138656927017
 
-        x_fp[:, :, 0] = (x_fp[:, :, 0]-lat_min)/(lat_max - lat_min)  # normalize lat
-        x_fp[:, :, 1] = (x_fp[:, :, 1]-lon_min)/(lon_max - lon_min)  # normalize lon
+        x_fp[:, :, 0] = (x_fp[:, :, 0] - lat_min) / (lat_max - lat_min)  # normalize lat
+        x_fp[:, :, 1] = (x_fp[:, :, 1] - lon_min) / (lon_max - lon_min)  # normalize lon
 
         y_traj[:, :, 0] = (y_traj[:, :, 0] - lat_min) / (lat_max - lat_min)  # normalize lat
         y_traj[:, :, 1] = (y_traj[:, :, 1] - lon_min) / (lon_max - lon_min)  # normalize lon
@@ -63,7 +64,7 @@ class train_weather_lstm(object):
         self.train_x_fp, self.test_x_fp, self.train_x_weather, self.test_x_weather, self.train_y_traj, self.test_y_traj \
             = train_test_split(x_fp, x_weather, y_traj, test_size=self.split_ratio, shuffle=False, random_state=None)
 
-        # only consider 2d case now
+        # only consider 2d case now (longitude and latitude)
         self.train_x_fp = self.train_x_fp[:, :, 0:2]
         self.test_x_fp = self.test_x_fp[:, :, 0:2]
         self.train_y_traj = self.train_y_traj[:, :, 0:2]
@@ -179,6 +180,7 @@ class train_weather_lstm(object):
             sess.run(tf.global_variables_initializer())
             for j in range(self.epoch):
                 for i in range(batch_num):
+
                     train_x_fp_batch = self.train_x_fp[self.batch_size * i:self.batch_size * (i+1), :, :]
                     train_x_weather_batch = self.train_x_weather[self.batch_size * i:self.batch_size * (i+1), :, :, :, :]
                     train_y_traj_batch = self.train_y_traj[self.batch_size * i:self.batch_size * (i+1), :, :]
@@ -227,12 +229,12 @@ class train_weather_lstm(object):
 
 if __name__ == '__main__':
 
-    cfg = {'lr': 0.01,
-           'epoch': 500,
-           'batch_size': 8,
+    cfg = {'lr': 0.05,
+           'epoch': 100,
+           'batch_size': 64,
            'input_dimension': 1000,  # number of trajectory points in the data
            'cube_size': 20,  # weather cube size
-           'split_ratio': 0.08,  # train test split ratio
+           'split_ratio': 0.1,  # train test split ratio
            }
 
     cfg['save_dir'] = './Epoch_{}_Dimension_{}'.format(cfg['epoch'], cfg['input_dimension'])

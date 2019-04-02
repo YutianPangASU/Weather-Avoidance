@@ -12,7 +12,7 @@ class test_weather_lstm(object):
 
     def load_data(self):
         # get file list
-        self.file_list = sorted(os.listdir('buffer0/training data/{}/flightplan data/'.format(self.input_dimension)))
+        self.file_list = sorted(os.listdir('training data/{}/weather data/JFK2LAX_ET'.format(self.input_dimension)))
         data_size = len(self.file_list)
 
         # create array to store files
@@ -22,9 +22,9 @@ class test_weather_lstm(object):
 
         # load files and store into one array
         for i in range(data_size):
-            x_fp[i, :, :] = np.load('buffer0/training data/{}/flightplan data/{}'.format(self.input_dimension, self.file_list[i]))
-            x_weather[i, :, :, :] = np.load('buffer0/training data/{}/weather data/JFK2LAX_ET/{}'.format(self.input_dimension, self.file_list[i]))
-            y_traj[i, :, :] = np.load('buffer0/training data/{}/trajectory data/{}'.format(self.input_dimension, self.file_list[i]))
+            x_fp[i, :, :] = np.load('training data/{}/flightplan data/{}'.format(self.input_dimension, self.file_list[i]))
+            x_weather[i, :, :, :] = np.load('training data/{}/weather data/JFK2LAX_ET/{}'.format(self.input_dimension, self.file_list[i]))
+            y_traj[i, :, :] = np.load('training data/{}/trajectory data/{}'.format(self.input_dimension, self.file_list[i]))
 
         # data normalization
         lat_max = 53.8742945085336
@@ -32,8 +32,8 @@ class test_weather_lstm(object):
         lon_min = -134.3486134307298
         lon_max = -61.65138656927017
 
-        x_fp[:, :, 0] = (x_fp[:, :, 0]-lat_min)/(lat_max - lat_min)  # normalize lat
-        x_fp[:, :, 1] = (x_fp[:, :, 1]-lon_min)/(lon_max - lon_min)  # normalize lon
+        x_fp[:, :, 0] = (x_fp[:, :, 0] - lat_min) / (lat_max - lat_min)  # normalize lat
+        x_fp[:, :, 1] = (x_fp[:, :, 1] - lon_min) / (lon_max - lon_min)  # normalize lon
 
         y_traj[:, :, 0] = (y_traj[:, :, 0] - lat_min) / (lat_max - lat_min)  # normalize lat
         y_traj[:, :, 1] = (y_traj[:, :, 1] - lon_min) / (lon_max - lon_min)  # normalize lon
@@ -172,7 +172,7 @@ class test_weather_lstm(object):
             feed_value_validation = {self.x_weather: self.valid_weather,
                                      self.x_fp: self.valid_x_fp,
                                      self.y_traj: self.valid_y_traj,
-                                     valid_size: 2, }
+                                     valid_size: self.valid_weather.shape[0], }
 
             self.y_pred = sess.run(self.y_pred, feed_dict=feed_value_validation)
 
@@ -192,14 +192,19 @@ class test_weather_lstm(object):
         destination = [33.94004, -118.40546]
         training_fp = self.inverse_normalization(self.valid_x_fp)
 
+        print('Plotting..................................')
         for i in range(self.y_pred.shape[0]):
 
             plt.figure(i)
 
+            # fix plot limit
+            #plt.xlim(33, 46)
+            #plt.ylim(-120, -70)
+
             pred_traj = self.y_pred[i, :, :]
             true_traj = self.y_true[i, :, :]
 
-            pred_traj = pred_traj[10:, :]
+            #pred_traj = pred_traj[10:, :]
 
             # pred_traj = np.insert(pred_traj, [0], [start], axis=0)
             # pred_traj = np.insert(pred_traj, [-1], [destination], axis=0)
@@ -218,20 +223,22 @@ class test_weather_lstm(object):
 
             plt.plot(training_fp[i, :, 0], training_fp[i, :, 1])
 
-            plt.plot(pred_traj[:, 0], pred_traj[:, 1])
+            plt.plot(pred_traj[:, 0], pred_traj[:, 1], 'r*')
             plt.plot(true_traj[:, 0], true_traj[:, 1])
 
             plt.legend(['train_fp', 'predicted', 'true'])
-            plt.title('Test on Testing Data')
+            plt.title('Test on Validation Data')
             plt.savefig('./Epoch_{}_Dimension_{}/{}.png'.format(cfg['epoch'], cfg['input_dimension'], self.file_list[i]))
-            plt.clf()
+            plt.close(i)  # close the current figure
+
+        print("Done.")
 
 
 if __name__ == '__main__':
 
     cfg = {'input_dimension': 1000,  # number of trajectory points in the data
            'cube_size': 20,  # weather cube size
-           'epoch': 200
+           'epoch': 100,
            }
 
     cfg['save_dir'] = './Epoch_{}_Dimension_{}'.format(cfg['epoch'], cfg['input_dimension'])
