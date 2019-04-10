@@ -1,37 +1,21 @@
 import os
 import numpy as np
 import tensorflow as tf
-from sklearn.model_selection import train_test_split
 
 
-class train_weather_lstm(object):
+class test_weather_lstm(object):
 
     def __init__(self, cfg):
-        self.lr = cfg['lr']
-        self.epoch = cfg['epoch']
         self.input_dimension = cfg['input_dimension']
         self.cube_size = cfg['cube_size']
-        self.split_ratio = cfg['split_ratio']
-        self.batch_size = cfg['batch_size']
         self.save_dir = cfg['save_dir']
-
-        if not os.path.exists(self.save_dir):
-            os.makedirs(self.save_dir)
-        else:
-            for the_file in os.listdir(self.save_dir):
-                file_path = os.path.join(self.save_dir, the_file)
-                try:
-                    if os.path.isfile(file_path):
-                        os.unlink(file_path)
-                except Exception as e:
-                    print(e)
 
     def load_data(self):
 
-        print("Loading Data................................")
+        print("Loading the validation data..............................................")
         # get file list
-        file_list = sorted(os.listdir('training data/{}/weather data/JFK2LAX_ET'.format(self.input_dimension)))
-        data_size = len(file_list)
+        self.file_list = sorted(os.listdir('training data/{}/weather data/JFK2LAX_ET'.format(self.input_dimension)))
+        data_size = len(self.file_list)
 
         # create array to store files
         x_fp = np.empty((data_size, self.input_dimension, 3), dtype=float)
@@ -40,9 +24,9 @@ class train_weather_lstm(object):
 
         # load files and store into one array
         for i in range(data_size):
-            x_fp[i, :, :] = np.load('training data/{}/flightplan data/{}'.format(self.input_dimension, file_list[i]))
-            x_weather[i, :, :, :] = np.load('training data/{}/weather data/JFK2LAX_ET/{}'.format(self.input_dimension, file_list[i]))
-            y_traj[i, :, :] = np.load('training data/{}/trajectory data/{}'.format(self.input_dimension, file_list[i]))
+            x_fp[i, :, :] = np.load('training data/{}/flightplan data/{}'.format(self.input_dimension, self.file_list[i]))
+            x_weather[i, :, :, :] = np.load('training data/{}/weather data/JFK2LAX_ET/{}'.format(self.input_dimension, self.file_list[i]))
+            y_traj[i, :, :] = np.load('training data/{}/trajectory data/{}'.format(self.input_dimension, self.file_list[i]))
 
         # data normalization
         lat_max = 53.8742945085336
@@ -61,20 +45,27 @@ class train_weather_lstm(object):
         x_weather = x_weather/np.amax(x_weather)
         x_weather = np.expand_dims(x_weather, axis=4)
 
-        # do train test split use sklearn function
-        self.train_x_fp, self.test_x_fp, self.train_x_weather, self.test_x_weather, self.train_y_traj, self.test_y_traj \
-            = train_test_split(x_fp, x_weather, y_traj, test_size=self.split_ratio, shuffle=True, random_state=None)
+        # only consider 2d case now
+        self.valid_x_fp = x_fp[:, :, 0:2]
+        self.valid_y_traj = y_traj[:, :, 0:2]
+        self.valid_weather = x_weather[:, :, :, :, :]
 
-        # only consider 2d case now (longitude and latitude)
-        #self.train_x_weather = self.train_x_weather[:, :, :, :, :]
-        #self.test_x_weather = self.test_x_weather[:, :, :, :, :]
+        print("Done loading the validation data.")
 
-        self.train_x_fp = self.train_x_fp[:, :, 0:2]
-        self.test_x_fp = self.test_x_fp[:, :, 0:2]
-        self.train_y_traj = self.train_y_traj[:, :, 0:2]
-        self.test_y_traj = self.test_y_traj[:, :, 0:2]
+    def inverse_normalization(self, tensor):
 
-        print("Done loading the data!")
+        lat_max = 53.8742945085336
+        lat_min = 19.35598953632181
+        lon_min = -134.3486134307298
+        lon_max = -61.65138656927017
+
+        delta_lat = lat_max - lat_min
+        delta_lon = lon_max - lon_min
+
+        tensor[:, :, 0] = tensor[:, :, 0] * delta_lat + lat_min
+        tensor[:, :, 1] = tensor[:, :, 1] * delta_lon + lon_min
+
+        return tensor
 
     def conv_lstm_graph(self, x, x_conv, y_true, batch_size):
 
@@ -255,8 +246,7 @@ class train_weather_lstm(object):
 
         self.gradient = tf.gradients(self.loss, f_t)
 
-
-    def train_model(self):
+    def valid_model(self):
 
         self.x_weather = tf.placeholder(tf.float32, [None, self.input_dimension-1, self.cube_size, self.cube_size, 1])
         self.x_fp = tf.placeholder(tf.float32, [None, self.input_dimension, 2])
@@ -264,99 +254,113 @@ class train_weather_lstm(object):
         # self.x_weather = tf.placeholder(tf.float32, [None, 9, self.cube_size, self.cube_size, 1])
         # self.x_fp = tf.placeholder(tf.float32, [None, 10, 2])
         # self.y_traj = tf.placeholder(tf.float32, [None, 10, 2])
-        #batch_size = tf.placeholder(dtype=tf.int32, name='batch_size')
+        valid_size = tf.placeholder(dtype=tf.int32, name='batch_size')
 
         # build graph
-        self.conv_lstm_graph(self.x_fp, self.x_weather, self.y_traj, self.batch_size)
-        #self.conv_lstm_graph_2(self.x_fp, self.x_weather, self.y_traj)
+        #self.conv_lstm_graph(self.x_fp, self.x_weather, self.y_traj, valid_size)
+        self.conv_lstm_graph_2(self.x_fp, self.x_weather, self.y_traj)
 
-        # store loss values
-        self.train_loss = []
-        self.test_loss = []
+        print("Start validation.")
 
-        # SGD
-        train_step = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
-        #train_step = tf.train.GradientDescentOptimizer(self.lr).minimize(self.loss)
+        saver = tf.train.Saver()
 
-        # batch number
-        batch_num = int(self.train_x_fp.shape[0] / self.batch_size)
-
-        from seaborn import distplot
-        import matplotlib.pylab as plt
-
-        print("Start training.")
         with tf.Session() as sess:
+            # session initialization
             sess.run(tf.global_variables_initializer())
-            for j in range(self.epoch):
-                for i in range(batch_num):
 
-                    train_x_fp_batch = self.train_x_fp[self.batch_size * i:self.batch_size * (i+1), :, :]
-                    train_x_weather_batch = self.train_x_weather[self.batch_size * i:self.batch_size * (i+1), :, :, :, :]
-                    train_y_traj_batch = self.train_y_traj[self.batch_size * i:self.batch_size * (i+1), :, :]
+            # Restore latest checkpoint
+            saver.restore(sess, tf.train.latest_checkpoint('./{}/'.format(self.save_dir)))
 
-                    feed_value_train = {self.x_weather: train_x_weather_batch,
-                                        self.x_fp: train_x_fp_batch,
-                                        self.y_traj: train_y_traj_batch,}
-                                        #self.batch_size: self.batch_size, }
+            feed_value_validation = {self.x_weather: self.valid_weather,
+                                     self.x_fp: self.valid_x_fp,
+                                     self.y_traj: self.valid_y_traj,
+                                     valid_size: self.valid_weather.shape[0], }
 
-                    feed_value_test = {self.x_weather: self.test_x_weather,
-                                       self.x_fp: self.test_x_fp,
-                                       self.y_traj: self.test_y_traj,}
-                                       #self.batch_size: self.test_x_fp.shape[0]}
+            self.y_pred = sess.run(self.y_pred, feed_dict=feed_value_validation)
 
-                    [_, loss_train] = sess.run([train_step, self.loss], feed_dict=feed_value_train)
-
-                    loss_test = sess.run(self.loss, feed_dict=feed_value_test)
-
-                    gradient = sess.run(self.gradient, feed_dict=feed_value_test)
-
-                    gradient_flat = np.reshape(gradient[0], [-1])
-
-                    # plt.figure("grad_{}".format(str(i+j)), figsize=(20, 20))
-                    # distplot(np.asarray(gradient_flat))
-                    # plt.show()
-                    # #plt.savefig("grad_{}".format(str(i+j)))
-
-                    print("Epoch: {} Batch: {} Train Loss: {} Test Loss: {}".format(j+1, i+1, loss_train, loss_test))
-
-                self.train_loss = np.append(self.train_loss, loss_train)
-                self.test_loss = np.append(self.test_loss, loss_test)
-
-            save_path = tf.train.Saver().save(sess, '{}/model.ckpt'.format(self.save_dir))
-            print("Model saved in path: {}".format(save_path))
+        self.y_pred = self.inverse_normalization(self.y_pred)
+        self.y_true = self.inverse_normalization(self.valid_y_traj)
+        self.training_fp = self.inverse_normalization(self.valid_x_fp)
 
         sess.close()
-        print("Finish training.")
 
-    def draw_loss(self):
+        print("Finish validation.")
+
+    def plot_results(self):
 
         import matplotlib.pyplot as plt
+        from sklearn.metrics.pairwise import euclidean_distances
 
-        xx = np.array(range(len(self.train_loss))) + 1
+        start = [40.65046, -73.79619]
+        destination = [33.94004, -118.40546]
 
-        plt.plot(xx, self.train_loss, 'k-', linewidth=1.0)
-        plt.plot(xx, self.test_loss, linewidth=1.0)
+        print('Plotting..................................')
+        for i in range(self.y_pred.shape[0]):
 
-        plt.legend(["Train Loss", "Test Loss"])
-        plt.xlabel("Epochs")
-        plt.ylabel("Loss")
-        plt.title('Loss vs. Epochs')
+            plt.figure(i)
 
-        plt.savefig('{}/{}.png'.format(self.save_dir, self.save_dir))
+            # fix plot limit
+            #plt.xlim(33, 46)
+            #plt.ylim(-120, -70)
+
+            pred_traj = self.y_pred[i, :, :]
+            true_traj = self.y_true[i, :, :]
+
+            #pred_traj = pred_traj[10:, :]
+
+            # pred_traj = np.insert(pred_traj, [0], [start], axis=0)
+            # pred_traj = np.insert(pred_traj, [-1], [destination], axis=0)
+            #
+            # true_traj = np.insert(true_traj, [0], [start], axis=0)
+            # true_traj = np.insert(true_traj, [-1], [destination], axis=0)
+
+            # from sklearn.metrics.pairwise import euclidean_distances
+            # distance_matrix = euclidean_distances(pred_traj, pred_traj)
+            # import seaborn as sns
+            # ax = plt.axes()
+            # sns.heatmap(distance_matrix, cmap="YlGnBu", ax=ax)
+            # ax.set_title('Distance between each point')
+            # ax.set_label("Points")
+            # plt.show()
+
+            plt.plot(self.training_fp[i, :, 0], self.training_fp[i, :, 1])
+
+            plt.plot(pred_traj[:, 0], pred_traj[:, 1], '-')
+            #plt.plot(pred_traj[:, 0], pred_traj[:, 1])
+            plt.plot(true_traj[:, 0], true_traj[:, 1])
+
+            plt.legend(['train_fp', 'predicted', 'true'])
+            plt.title('Test on Validation Data')
+            plt.savefig('./Epoch_{}_Dimension_{}/{}.png'.format(cfg['epoch'], cfg['input_dimension'], self.file_list[i]))
+            plt.close(i)  # close the current figure
+
+        print("Done.")
+
+    def deviance_reduction(self):
+        dev_ori = self.y_true - self.training_fp
+        dev_new = self.y_true - self.y_pred
+
+        l2_ori = np.sum(np.sum(dev_ori ** 2, axis=2), axis=1)
+        l2_new = np.sum(np.sum(dev_new ** 2, axis=2), axis=1)
+
+        ratio = l2_new/l2_ori
+
+        number_reduced_tol = len(np.where(l2_new / l2_ori < 1)[0])
+        print("Generally, {}/{} tracks is reduced.".format(number_reduced_tol, len(l2_ori)))
+
+        print("deviance")
 
 
 if __name__ == '__main__':
 
-    cfg = {'lr': 0.01,
-           'epoch': 50,
-           'batch_size': 64,
-           'input_dimension': 1000,  # number of trajectory points in the data
+    cfg = {'input_dimension': 50,  # number of trajectory points in the data
            'cube_size': 20,  # weather cube size
-           'split_ratio': 0.1,  # train test split ratio
+           'epoch': 100,
            }
 
     cfg['save_dir'] = './Epoch_{}_Dimension_{}'.format(cfg['epoch'], cfg['input_dimension'])
 
-    fun = train_weather_lstm(cfg)
-    fun.train_model()
-    fun.draw_loss()
+    fun = test_weather_lstm(cfg)
+    fun.valid_model()
+    fun.deviance_reduction()
+    #fun.plot_results()
