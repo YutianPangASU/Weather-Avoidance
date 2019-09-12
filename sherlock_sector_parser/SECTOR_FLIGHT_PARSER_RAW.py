@@ -55,8 +55,8 @@ if __name__ == '__main__':
     cfg['path_to_data'] = '/media/ypang6/paralab/Research/data/'
     cfg['sector_name'] = 'ZID'
 
-    #date_list = [20181129, 20181130]
-    date_list = sorted([x.split('_')[2].split('.')[0] for x in os.listdir(cfg['path_to_data'] + cfg['sector_name'])])
+    date_list = [20190805]
+    #date_list = sorted([x.split('_')[2].split('.')[0] for x in os.listdir(cfg['path_to_data'] + cfg['sector_name'])])
 
     for date in date_list:
         cfg['file_date'] = date

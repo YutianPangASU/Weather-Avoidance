@@ -117,7 +117,7 @@ class sector_processer(object):
 
 if __name__ == '__main__':
     cfg = {}
-    cfg['date'] = '20181101'
+    cfg['date'] = '20190805'
     cfg['sector_name'] = 'ZID'
     cfg['number_of_points'] = 50
     fun = sector_processer(cfg)
