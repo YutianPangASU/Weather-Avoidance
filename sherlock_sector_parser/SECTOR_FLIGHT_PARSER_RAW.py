@@ -30,19 +30,31 @@ class FAA_Sector_Parser(object):
         print("File Loaded.")
 
         df_clean = df.loc[df.index[df[0] == 3]]  # take trajectory
-        df_fp = df.loc[df.index[df[0] == 4], [7, 17]]
-        df_clean = df_clean.loc[:, [1, 7, 9, 10, 11]]
+        df_fp = df.loc[df.index[df[0] == 4], [2, 17]]
+        df_clean = df_clean.loc[:, [1, 2, 7, 9, 10, 11]]
+
         call_sign_list = df_clean[7].unique().tolist()
-        print('Total number of flight passing through {} on {} is {}'.format(self.sector_name, self.date, len(call_sign_list)))
+        flight_id_list = df_clean[2].unique().tolist()
+        print('Total number of flight passing through {} on {} is {}'.format(self.sector_name, self.date, len(flight_id_list)))
+
+        # dict_tracks = {}
+        # dict_fps = {}
+        # for callsign in call_sign_list:
+        #     tracks = df_clean[df_clean[7] == callsign]
+        #     fps = df_fp[df_fp[7] == callsign].iloc[0][17]
+        #
+        #     dict_tracks[callsign] = tracks
+        #     dict_fps[callsign] = fps
 
         dict_tracks = {}
         dict_fps = {}
-        for callsign in call_sign_list:
-            tracks = df_clean[df_clean[7] == callsign]
-            fps = df_fp[df_fp[7] == callsign].iloc[0][17]
+        for flight_id in flight_id_list:
+            tracks = df_clean[df_clean[2] == flight_id]
+            fps = df_fp[df_fp[2] == flight_id].iloc[0][17]
 
-            dict_tracks[callsign] = tracks
-            dict_fps[callsign] = fps
+            dict_tracks[flight_id] = tracks
+            dict_fps[flight_id] = fps
+
         print('SAVING.......................')
 
         np.save('{}/FP_{}_{}.npy'.format(self.sector_name, self.sector_name, self.date), dict_fps)

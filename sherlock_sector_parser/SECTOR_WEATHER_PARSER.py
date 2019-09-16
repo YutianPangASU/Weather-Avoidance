@@ -185,7 +185,8 @@ class weather_cube_generator(object):
 
 
 if __name__ == '__main__':
-    #data = pickle.load(open('WEATHER_CUBE_ZID_20190805.p', 'rb'))
+    # data = pickle.load(open('WEATHER_CUBE_ZID_20190805.p', 'rb'))
+    # data1 = pickle.load(open('TRACKS_ZID_20190805.p', 'rb'))
     cfg = {}
     cfg['date'] = '20190805'
     cfg['sector_name'] = 'ZID'
